@@ -5,16 +5,15 @@ import cv2
 class Cropper:
 
     TARGET_SIZE = (416, 416)
-    IMAGE_SIZE = (800, 500)
+    IMAGE_SIZE = (1920, 1200)
     def __init__(self):
 
         self.image_output = None
-
+        self.best_bboxes = None
 
     @staticmethod
     def decode_prediction(pred, original_width, original_height, iou_threshold):
         """
-
         :param pred: Tensorflow tensor : prediction of detector model
         :param original_width:
         :param original_height:
@@ -43,18 +42,32 @@ class Cropper:
         best_bboxes = nms(bboxes, iou_threshold=iou_threshold)
         best_bboxes = np.array(best_bboxes)
 
-        return best_bboxes
+        num_bboxes = len(best_bboxes)
+        if num_bboxes < 5:
+            return best_bboxes
 
-    @staticmethod
-    def convert_bbox_to_points(best_bboxes):
+        #select best box of each class
+        final_best_bboxes = np.zeros((5, best_bboxes.shape[1]))
+        classes = best_bboxes[:, 5].astype(int)
+        scores = best_bboxes[:, 4]
+
+        for i in range(5):
+            mask = classes == i
+            idx = np.argmax(scores * mask)
+            final_best_bboxes[i] = best_bboxes[idx]
+
+        return final_best_bboxes
+
+
+    def convert_bbox_to_points(self):
         """
         :param best_bboxes: ndarray shape (5, 6)
         best_bboxes[i]: (x_min, y_min, x_max, y_max, score, class)
         :return: points : list((top_left, top_right, bottom_left, bottom_right))
         """
-        classes = best_bboxes[:, 5]
+        classes = self.best_bboxes[:, 5]
         idx = np.argsort(classes)
-        top_left_box, top_right_box, bottom_left_box, bottom_right_box, id_card = best_bboxes[idx]
+        top_left_box, top_right_box, bottom_left_box, bottom_right_box, id_card = self.best_bboxes[idx]
 
         x_top_left = int(top_left_box[0])
         y_top_left = int(top_left_box[1])
@@ -75,30 +88,24 @@ class Cropper:
         points = list([top_left, top_right, bottom_left, bottom_right])
         return points
 
-    @staticmethod
-    def respone_client(best_bboxes, threshold_idcard):
-        valid = True
-        num_bbxoes = best_bboxes.shape[0]
+
+    def respone_client(self, threshold_idcard):
+        num_bbxoes = self.best_bboxes.shape[0]
         if num_bbxoes < 5:
             return False
 
-        idx = list(np.where((best_bboxes[:, 5]).astype(int) == 4))
+        idx = list(np.where((self.best_bboxes[:, 5]).astype(int) == 4))
+
         if not idx:
-            valid = False
+            return False
         else:
-            id_card_box = best_bboxes[idx]
+            id_card_box = self.best_bboxes[idx]
             id_card_score = id_card_box[0, 4]
             if id_card_score < threshold_idcard:
-                valid = False
-
-        num_bboxes = best_bboxes.shape[0]
-        if num_bboxes != 5 or not valid:
-            return False
-
+                return False
         return True
 
-    @staticmethod
-    def align_image(image, points):
+    def align_image(self, image, points):
         """
         :param image: ndarray of image
         :param points: list[top_left, top_right, bottom_left, bottom_right]
@@ -131,7 +138,12 @@ class Cropper:
         warped = cv2.resize(warped, (1920, 1200))
 
         return warped
-
+    def set_image(self, original_image):
+        points = self.convert_bbox_to_points()
+        self.image_output = self.align_image(original_image, points=points)
+    def set_best_bboxes(self, pred, original_width, original_height, iou_threshold):
+        self.best_bboxes = self.decode_prediction(pred, original_width=original_width\
+                                                  , original_height=original_height, iou_threshold=iou_threshold)
 
 
 

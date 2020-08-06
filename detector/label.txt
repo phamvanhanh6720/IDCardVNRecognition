@@ -1,0 +1,9 @@
+id
+full_name
+data_of_birth
+sex
+quoc_tich
+dan_toc
+address_info
+chan_dung
+thoi_han
