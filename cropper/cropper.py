@@ -14,16 +14,12 @@ class Cropper:
     @staticmethod
     def decode_prediction(pred, original_width, original_height, iou_threshold):
         """
-        :param pred: Tensorflow tensor : prediction of detector model
+        :param pred: ndarray 2-D : respone of cropper model
         :param original_width:
         :param original_height:
         :param iou_threshold:
         :return: ndarray best_bboxes: (x_min, y_min, x_max, y_max, score, class)
         """
-        pred = tf.reshape(pred, (tf.shape(pred).numpy()[1], tf.shape(pred).numpy()[2]))
-        # convert Tensorflow tensor to ndarray
-        pred = tf.make_tensor_proto(pred)
-        pred = tf.make_ndarray(pred)
 
         # coordinates[i] : (y_min, x_min, y_max, x_max)
         coordinates = pred[:, 0:4]
@@ -138,6 +134,7 @@ class Cropper:
         warped = cv2.resize(warped, (1920, 1200))
 
         return warped
+
     def set_image(self, original_image):
         points = self.convert_bbox_to_points()
         self.image_output = self.align_image(original_image, points=points)

@@ -1,0 +1,36 @@
+{% extends "templates/public_template.html" %}
+
+{% block title %}Python Flask Image Upload and Display Example{% endblock %}
+
+{% block main %}
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+
+      <h1>Upload an image</h1>
+      <hr>
+      {% if filename %}
+	  <div>
+		<img src="{{ url_for('display_image', filename=filename) }}">
+	  </div>
+      {% endif %}
+      <form action="/upload-image" method="POST" enctype="multipart/form-data">
+
+        <div class="form-group">
+          <label>Select image</label>
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" name="image" id="image">
+            <label class="custom-file-label" for="image">Select image...</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Upload</button>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

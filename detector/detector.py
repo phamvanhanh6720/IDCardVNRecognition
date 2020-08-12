@@ -13,7 +13,7 @@ class Detector:
     def decode_prediction(pred, original_width, original_height, iou_threshold):
         """
 
-        :param pred: Tensorflow tensor : prediction of detector model
+        :param pred: ndarray 2-D : respone of detector model
         :param original_width:
         :param original_height:
         :param iou_threshold:
@@ -29,10 +29,6 @@ class Detector:
         chan_dung           7
         thoi_han            8
         """
-        pred = tf.reshape(pred, (tf.shape(pred).numpy()[1], tf.shape(pred).numpy()[2]))
-        # convert Tensorflow tensor to ndarray
-        pred = tf.make_tensor_proto(pred)
-        pred = tf.make_ndarray(pred)
 
         # coordinates[i] : (y_min, x_min, y_max, x_max)
         coordinates = pred[:, 0:4]
@@ -99,8 +95,7 @@ class Detector:
 
         num_address = address_info.shape[0]
         dict_address = {}
-        print(num_address)
-        print(address_info[0])
+
         if num_address == 4:
             dict_address['que_quan'] = [list(address_info[0]), list(address_info[1])]
             dict_address['noi_thuong_tru'] = [list(address_info[2]), list(address_info[3])]

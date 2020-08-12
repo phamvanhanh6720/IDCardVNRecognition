@@ -102,11 +102,11 @@ def preprocess_image(image_path, target_size):
 
     img = tf.keras.preprocessing.image.load_img(image_path, target_size=target_size)
     img = tf.keras.preprocessing.image.img_to_array(img) / 255.
-
+    img = np.float32(img)
     # convert ndarray to Tensorflow tensor
-    img = tf.convert_to_tensor(img)
-    img = tf.expand_dims(img, axis=0)
-    img = tf.cast(img, tf.float32)
+    # img = tf.convert_to_tensor(img)
+    # img = tf.expand_dims(img, axis=0)
+    # img = tf.cast(img, tf.float32)
 
     return img, original_image, original_width, original_height
 
