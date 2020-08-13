@@ -5,7 +5,7 @@
 
 -	performance ko đỡ nổi :((
 
-## Referances:
+## References:
 - [FaceNet: A Unified Embedding for Face Recognition and Clustering](https://paperswithcode.com/paper/facenet-a-unified-embedding-for-face)
 
 - [Joint Face Detection and Alignment using Multi-task Cascaded Convolutional Networks](https://paperswithcode.com/paper/joint-face-detection-and-alignment-using)
