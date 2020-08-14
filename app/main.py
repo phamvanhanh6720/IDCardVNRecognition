@@ -1,5 +1,5 @@
 from app import app
-from flask import render_template
+from flask import render_template, jsonify
 from flask import request, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
@@ -18,11 +18,15 @@ import matplotlib.pyplot as plt
 
 from PIL import Image
 
-from vietocr.tool.predictor import Predictor
+from reader.reader import  Predictor
 from vietocr.tool.config import Cfg
-
+"""
+=========================
+== Reader model
+=========================
+"""
 config = Cfg.load_config_from_name('vgg_transformer')
-config['weights'] = 'https://drive.google.com/uc?id=13327Y1tz1ohsm5YZMyXVMPIOjoOA0OaA'
+config['weights'] = './models/reader/transformerocr.pth'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
@@ -88,11 +92,17 @@ def predict(filename):
     # signature name, default is 'serving_default'
     request.model_spec.signature_name = "serving_default"
     start = time.time()
-
+    """
+    =========================================
+    ===== Crop and align id card image
+    =========================================
+    """
     filepath = app.config["IMAGE_UPLOADS"]+"/"+filename
+    # preprocess image
     img, original_image, original_width, original_height = preprocess_image(filepath, Cropper.TARGET_SIZE)
     if img.ndim == 3:
         img = np.expand_dims(img, axis=0)
+    # request to cropper model
     request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img, dtype=np.float32, shape=img.shape))
     print(filepath)
     try:
@@ -106,14 +116,22 @@ def predict(filename):
     cropper = Cropper()
     cropper.set_best_bboxes(result, original_width=original_width, original_height=original_height, iou_threshold=0.5)
 
+    # respone to client if image is invalid
     if not cropper.respone_client(threshold_idcard=0.5):
         return "invalid image"
 
     cropper.set_image(original_image=original_image)
 
+    # output of cropper part
     aligned_image = getattr(cropper, "image_output")
     aligned_image = cv2.cvtColor(aligned_image, cv2.COLOR_BGR2RGB)
 
+    """
+    ===========================================
+    ==== Detect informations in aligned image
+    ===========================================
+    """
+    # preprocess aligned image
     original_height, original_width, _ = aligned_image.shape
     img = cv2.resize(aligned_image, Detector.TARGET_SIZE)
     img = np.float32(img/255.)
@@ -124,6 +142,7 @@ def predict(filename):
 
     if img.ndim == 3:
         img = np.expand_dims(img, axis=0)
+    # new request to detector model
     request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img, dtype=np.float32, shape=img.shape))
 
     try:
@@ -137,15 +156,53 @@ def predict(filename):
     detector = Detector()
     detector.set_best_bboxes(result, original_width=original_width, original_height=original_height, iou_threshold=0.5)
     detector.set_info_images(original_image=aligned_image)
+    # output of detector part
     info_images = getattr(detector, "info_images")
 
+    """
+    =====================================
+    ==== Reader infors from infors image
+    =====================================
+    """
+    keys = list(info_images.keys())
+    keys.remove("thoi_han")
+    keys.remove("chan_dung")
+    infors = dict()
+    if "quoc_tich" in keys:
+        infors['quoc_tich'] = ["Việt Nam"]
+        keys.remove("quoc_tich")
 
-    keys = info_images.keys()
-    plt.imsave(app.config["IMAGE_UPLOADS"]+"/crop.jpg", info_images['full_name'][0]['image'])
+    if "sex" in keys:
+        info_image = info_images["sex"]
+        infors["sex"] = list()
+        for i in range(len(info_image)):
+            img = info_image[i]['image']
+            s = reader.predict(img)
+            if "Na" in s:
+                infors["sex"].append("Nam")
+            else:
+                infors["sex"].append("Nữ")
+        keys.remove("sex")
 
-    img = app.config["IMAGE_UPLOADS"]+"/crop.jpg"
-    img = Image.open(img)
-    s = reader.predict(img)
+    if "dan_toc" in keys:
+        info_image = info_images["dan_toc"]
+        infors["dan_toc"] = list()
+        for i in range(len(info_image)):
+            img = info_image[i]['image']
+            s = reader.predict(img)
+            s = s.split(" ")[-1]
+            infors["dan_toc"].append(s)
+
+        keys.remove("dan_toc")
+
+    for key in keys:
+        infors[key] = list()
+        info_image = info_images[key]
+        for i in range(len(info_image)):
+            img = info_image[i]['image']
+            s = reader.predict(img)
+            infors[key].append(s)
+
     print("total_time:{}".format(time.time()-start))
-    return s
+    return str(infors)
 
