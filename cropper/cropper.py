@@ -97,6 +97,7 @@ class Cropper:
         else:
             id_card_box = self.best_bboxes[idx]
             id_card_score = id_card_box[0, 4]
+            print(id_card_score)
             if id_card_score < threshold_idcard:
                 return False
         return True

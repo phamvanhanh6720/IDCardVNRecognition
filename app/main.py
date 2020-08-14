@@ -26,14 +26,15 @@ from vietocr.tool.config import Cfg
 =========================
 """
 config = Cfg.load_config_from_name('vgg_transformer')
-config['weights'] = './models/reader/transformerocr.pth'
+config['weights'] = './models/reader/transformerocr_v2.pth'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    #return render_template("index.html")
+    return redirect(url_for("upload_image"))
 
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["JPEG", "JPG", "PNG", "GIF"]
 
@@ -49,6 +50,30 @@ def allowed_image(filename):
     else:
         return False
 
+def reorient_image(im):
+    im = Image.open(im)
+    try:
+        image_exif = im._getexif()
+        image_orientation = image_exif[274]
+        print(image_orientation)
+        if image_orientation in (2, '2'):
+            return im.transpose(Image.FLIP_LEFT_RIGHT)
+        elif image_orientation in (3, '3'):
+            return im.transpose(Image.ROTATE_180)
+        elif image_orientation in (4, '4'):
+            return im.transpose(Image.FLIP_TOP_BOTTOM)
+        elif image_orientation in (5, '5'):
+            return im.transpose(Image.ROTATE_90).transpose(Image.FLIP_TOP_BOTTOM)
+        elif image_orientation in (6, '6'):
+            return im.transpose(Image.ROTATE_270)
+        elif image_orientation in (7, '7'):
+            return im.transpose(Image.ROTATE_270).transpose(Image.FLIP_TOP_BOTTOM)
+        elif image_orientation in (8, '8'):
+            return im.transpose(Image.ROTATE_90)
+        else:
+            return im
+    except (KeyError, AttributeError, TypeError, IndexError):
+        return im
 
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():
@@ -58,15 +83,16 @@ def upload_image():
         if request.files:
 
             image = request.files["image"]
-
+            print(type(image))
             if image.filename == "":
-                print("No filename")
                 return redirect(request.url)
 
             if allowed_image(image.filename):
                 filename = secure_filename(image.filename)
-
                 image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
+
+                reoriented_img = reorient_image(os.path.join(app.config["IMAGE_UPLOADS"], filename))
+                reoriented_img.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
 
                 print("Image saved")
 
@@ -117,7 +143,7 @@ def predict(filename):
     cropper.set_best_bboxes(result, original_width=original_width, original_height=original_height, iou_threshold=0.5)
 
     # respone to client if image is invalid
-    if not cropper.respone_client(threshold_idcard=0.5):
+    if not cropper.respone_client(threshold_idcard=0.8):
         return "invalid image"
 
     cropper.set_image(original_image=original_image)
