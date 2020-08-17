@@ -1,36 +1,79 @@
-{% extends "templates/public_template.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Login V1</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->	
+	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+<!--===============================================================================================-->
+</head>
+<body>
+	
+	<div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100">
+				<div class="login100-pic js-tilt" data-tilt>
+					<img src="images/CCCD.jpg" alt="IMG">
+				</div>
+				<form action="/upload-image" method="POST" enctype="multipart/form-data"> 
+					<span class="login100-form-title">
+						Upload Image
+					</span>
 
-{% block title %}Python Flask Image Upload and Display Example{% endblock %}
+					<div class="wrap-input100 validate-input">
+						<input type="file" multiple>
+					</div>
+					
+					<div class="container-login100-form-btn">
+						<button class="login100-form-btn" type="submit">
+							Upload
+						</button>
+					</div>
 
-{% block main %}
+					<div class="text-center p-t-136">
+						<a class="txt2" href="https://www.facebook.com/phamvanhanh2000" target="_blank">
+							Contact
+							<i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	
+	
 
-<div class="container">
-  <div class="row">
-    <div class="col">
+	
+<!--===============================================================================================-->	
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/tilt/tilt.jquery.min.js"></script>
+	<script >
+		$('.js-tilt').tilt({
+			scale: 1.1
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
 
-      <h1>Upload an image</h1>
-      <hr>
-      {% if filename %}
-	  <div>
-		<img src="{{ url_for('display_image', filename=filename) }}">
-	  </div>
-      {% endif %}
-      <form action="/upload-image" method="POST" enctype="multipart/form-data">
-
-        <div class="form-group">
-          <label>Select image</label>
-          <div class="custom-file">
-            <input type="file" class="custom-file-input" name="image" id="image">
-            <label class="custom-file-label" for="image">Select image...</label>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Upload</button>
-
-      </form>
-
-    </div>
-  </div>
-</div>
-
-{% endblock %}
+</body>
+</html>
