@@ -26,7 +26,8 @@ from vietocr.tool.config import Cfg
 =========================
 """
 config = Cfg.load_config_from_name('vgg_transformer')
-config['weights'] = './models/reader/transformerocr_v2.pth'
+# config = Cfg.load_config_from_file('vgg.txt')
+config['weights'] = 'https://drive.google.com/uc?id=1V4oMDw6I3Yoet04vQUjU5gV7jnDOz5MR'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
