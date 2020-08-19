@@ -23,28 +23,6 @@
 .text-right {text-align: right;}
 .text-middle {vertical-align: middle;}
 
-/*[ Display ]
------------------------------------------------------------
-*/
-.dis-none {display: none;}
-.dis-block {display: block;}
-.dis-inline {display: inline;}
-.dis-inline-block {display: inline-block;}
-.dis-flex {
-	display: -webkit-box;
-	display: -webkit-flex;
-	display: -moz-box;
-	display: -ms-flexbox;
-	display: flex;
-}
-
-/*[ Position ]
------------------------------------------------------------
-*/
-.pos-relative {position: relative;}
-.pos-absolute {position: absolute;}
-.pos-fixed {position: fixed;}
-
 /*[ float ]
 -----------------------------------------------------------
 */
