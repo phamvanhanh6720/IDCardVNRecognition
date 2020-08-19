@@ -225,5 +225,5 @@ def predict(filename):
             infors[key].append(s)
 
     print("total_time:{}".format(time.time()-start))
-    # return str(infors)
-    return render_template('predict.html')
+    return str(infors)
+    # return render_template('predict.html')
