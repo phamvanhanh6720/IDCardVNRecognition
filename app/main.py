@@ -24,8 +24,8 @@ from vietocr.tool.config import Cfg
 =========================
 """
 config = Cfg.load_config_from_name('vgg_transformer')
-# config['weights'] = './models/reader/transformerocr_v2.pth'
-config['weights'] = 'https://drive.google.com/uc?id=18O7FJzGCrk1ecDlJxHhLLdBkvuYDjKN-'
+config['weights'] = './models/reader/transformerocr_v2.pth'
+#config['weights'] = 'https://drive.google.com/uc?id=18O7FJzGCrk1ecDlJxHhLLdBkvuYDjKN-'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
@@ -191,15 +191,18 @@ def predict(filename):
     infors = dict()
 
     # Output to HTML
-    output= { 'id': None, \
+    output = { 'id': None, \
               'full_name': None, \
               'date_of_birth': None, \
               'sex': None, \
-              'quoc-tich': None, \
+              'quoc_tich': "", \
               'que_quan_0': None, \
               'que_quan_1': None, \
               'noi_thuong_tru_0': None, \
               'noi_thuong_tru_1': None}
+    # init default value of quoc_tich, dan_toc
+    infors['quoc_tich'] = ""
+    infors['dan_toc'] = ""
 
     if "quoc_tich" in keys:
         infors['quoc_tich'] = ["Việt Nam"]
@@ -236,14 +239,12 @@ def predict(filename):
             s = reader.predict(img)
             infors[key].append(s)
 
-    # Output to HTML
-    for i in infors:
-        output[i] = infors[i]
+
 
 
     print("total_time:{}".format(time.time()-start))
-    return render_template('predict.html', id=output['id'], full_name=output['full_name'], \
-                            date_of_birth=output['date_of_birth'], \
-                            sex=output['sex'], quoc_tich=output['quoc_tich'], \
-                            que_quan=output['que_quan'], \
-                            noi_thuong_tru=output['noi_thuong_tru'])
+    return render_template('predict.html', id=infors['id'], full_name=infors['full_name'], \
+                            date_of_birth=infors['date_of_birth'], \
+                            sex=infors['sex'], quoc_tich=infors['quoc_tich'], dan_toc=infors['dan_toc'], \
+                            que_quan=infors['que_quan'], \
+                            noi_thuong_tru=infors['noi_thuong_tru'])

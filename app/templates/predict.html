@@ -13,11 +13,16 @@
     <body>            
         <div class="limiter">
 	    	<div class="container-list">
-                        <div class="home-title"><h6>{{ id }}</h6></div>
+                        <div class="home-title"><h6>{{ id[0] }}</h6></div>
                         <div class="home-title"><h6>{{ full_name }}</h6></div>
                         <div class="home-title"><h6>{{ date_of_birth }}</h6></div>
                         <div class="home-title"><h6>{{ sex }}</h6></div>
+                        {% if dan_toc != "" %}
+                        <div class="home-title"><h6>{{ dan_toc }}</h6></div>
+                        {% endif %}
+                        {% if quoc_tich != "" %}
                         <div class="home-title"><h6>{{ quoc_tich }}</h6></div>
+                        {% endif %}
                         <div class="home-title"><h6>{{ que_quan }}</h6></div>   
                         <div class="home-title"><h6>{{ noi_thuong_tru }}</h6></div>
 	    	</div>
