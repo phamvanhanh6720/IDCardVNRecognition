@@ -196,8 +196,10 @@ def predict(filename):
               'date_of_birth': None, \
               'sex': None, \
               'quoc-tich': None, \
-              'que_quan': None, \
-              'noi_thuong_tru': None}
+              'que_quan_0': None, \
+              'que_quan_1': None, \
+              'noi_thuong_tru_0': None, \
+              'noi_thuong_tru_1': None}
 
     if "quoc_tich" in keys:
         infors['quoc_tich'] = ["Việt Nam"]
@@ -235,8 +237,9 @@ def predict(filename):
             infors[key].append(s)
 
     # Output to HTML
-    for i in infors:    
+    for i in infors:
         output[i] = infors[i]
+
 
     print("total_time:{}".format(time.time()-start))
     return render_template('predict.html', id=output['id'], full_name=output['full_name'], \

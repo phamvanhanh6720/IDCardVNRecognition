@@ -23,6 +23,28 @@
 .text-right {text-align: right;}
 .text-middle {vertical-align: middle;}
 
+/*[ Display ]
+-----------------------------------------------------------
+*/
+.dis-none {display: none;}
+.dis-block {display: block;}
+.dis-inline {display: inline;}
+.dis-inline-block {display: inline-block;}
+.dis-flex {
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -moz-box;
+	display: -ms-flexbox;
+	display: flex;
+}
+
+/*[ Position ]
+-----------------------------------------------------------
+*/
+.pos-relative {position: relative;}
+.pos-absolute {position: absolute;}
+.pos-fixed {position: fixed;}
+
 /*[ float ]
 -----------------------------------------------------------
 */
@@ -57,66 +79,5 @@
 .left-auto {left: auto;}
 .right-auto {right: auto;}
 
-/*[ Background ]
------------------------------------------------------------
-*/
-.bgwhite {background-color: white;}
-.bgblack {background-color: black;}
 
 
-
-/*[ Wrap Picture ]
------------------------------------------------------------
-*/
-.wrap-pic-w img {width: 100%;}
-.wrap-pic-max-w img {max-width: 100%;}
-
-/* ------------------------------------ */
-.wrap-pic-h img {height: 100%;}
-.wrap-pic-max-h img {max-height: 100%;}
-
-/* ------------------------------------ */
-.wrap-pic-cir {
-	border-radius: 50%;
-	overflow: hidden;
-}
-.wrap-pic-cir img {
-	width: 100%;
-}
-
-
-
-/*[ Hover ]
------------------------------------------------------------
-*/
-.hov-pointer:hover {cursor: pointer;}
-
-/* ------------------------------------ */
-.hov-img-zoom {
-	display: block;
-	overflow: hidden;
-}
-.hov-img-zoom img{
-	width: 100%;
-	-webkit-transition: all 0.6s;
-    -o-transition: all 0.6s;
-    -moz-transition: all 0.6s;
-    transition: all 0.6s;
-}
-.hov-img-zoom:hover img {
-	-webkit-transform: scale(1.1);
-  	-moz-transform: scale(1.1);
-  	-ms-transform: scale(1.1);
-  	-o-transform: scale(1.1);
-	transform: scale(1.1);
-}
-
-/*[  ]
------------------------------------------------------------
-*/
-.bo-cir {border-radius: 50%;}
-
-.of-hidden {overflow: hidden;}
-
-.visible-false {visibility: hidden;}
-.visible-true {visibility: visible;}
