@@ -2,7 +2,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
 
-    IMAGE_UPLOADS = "/home/tranhuuhuy297/Projects/IDCardVNRecognition"
+    IMAGE_UPLOADS = "./app/static/images"
 
 class ProductionConfig(Config):
     pass
@@ -10,7 +10,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEBUG = True
 
-    IMAGE_UPLOADS = "/home/tranhuuhuy297/Projects/IDCardVNRecognition"
+    IMAGE_UPLOADS = "./app/static/images"
 
 class TestingConfig(Config):
     TESTING = True

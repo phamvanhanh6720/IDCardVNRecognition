@@ -1,5 +1,5 @@
 from app import app
-from flask import render_template, jsonify
+from flask import render_template
 from flask import request, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
@@ -14,8 +14,6 @@ import numpy as np
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
 import time
-import matplotlib.pyplot as plt
-
 from PIL import Image
 
 from reader.reader import  Predictor
@@ -26,8 +24,7 @@ from vietocr.tool.config import Cfg
 =========================
 """
 config = Cfg.load_config_from_name('vgg_transformer')
-# config = Cfg.load_config_from_file('vgg.txt')
-config['weights'] = 'https://drive.google.com/uc?id=1V4oMDw6I3Yoet04vQUjU5gV7jnDOz5MR'
+config['weights'] = './models/reader/transformerocr_v2.pth'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
@@ -97,7 +94,6 @@ def upload_image():
 
                 print("Image saved")
 
-                #return render_template("upload_image.html", filename=filename)
                 return redirect(url_for("predict", filename=filename))
 
             else:
