@@ -1,4 +1,6 @@
-tensorflow-gpu 2.2.0
-opencv 3.4.0
-numpy
-
+tensorflow-serving-api
+opencv 3.4.10
+torch 
+vietocr 0.1.9
+pyyaml
+easydict
