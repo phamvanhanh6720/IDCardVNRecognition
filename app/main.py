@@ -189,6 +189,16 @@ def predict(filename):
     keys.remove("thoi_han")
     keys.remove("chan_dung")
     infors = dict()
+
+    # Output to HTML
+    output= { 'id': None, \
+              'full_name': None, \
+              'date_of_birth': None, \
+              'sex': None, \
+              'quoc-tich': None, \
+              'que_quan': None, \
+              'noi_thuong_tru': None}
+
     if "quoc_tich" in keys:
         infors['quoc_tich'] = ["Việt Nam"]
         keys.remove("quoc_tich")
@@ -224,6 +234,13 @@ def predict(filename):
             s = reader.predict(img)
             infors[key].append(s)
 
+    # Output to HTML
+    for i in infors:    
+        output[i] = infors[i]
+
     print("total_time:{}".format(time.time()-start))
-    return str(infors)
-    # return render_template('predict.html')
+    return render_template('predict.html', id=output['id'], full_name=output['full_name'], \
+                            date_of_birth=output['date_of_birth'], \
+                            sex=output['sex'], quoc_tich=output['quoc_tich'], \
+                            que_quan=output['que_quan'], \
+                            noi_thuong_tru=output['noi_thuong_tru'])
