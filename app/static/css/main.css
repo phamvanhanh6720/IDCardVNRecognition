@@ -162,8 +162,7 @@ iframe {
   display: -ms-flexbox;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
-  padding: 177px 130px 33px 95px;
+  padding: 100px 100px 100px 100px;
 }
 
 .container-list {
@@ -182,6 +181,7 @@ iframe {
 
 .login100-pic img {
   max-width: 100%;
+  padding-top: 50px;
 }
 
 
@@ -438,7 +438,12 @@ iframe {
 }
 
 .home-title {
-    font-family: 'Maitree', serif;
+    font-family: "IBM Plex Sans", sans-serif;
+    margin: auto;
+}
+
+.home-title-center{
+  text-align: cencen;
 }
 
 @keyframes a-ltr-after{

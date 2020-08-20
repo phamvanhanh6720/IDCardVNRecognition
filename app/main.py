@@ -24,8 +24,8 @@ from vietocr.tool.config import Cfg
 =========================
 """
 config = Cfg.load_config_from_name('vgg_transformer')
-config['weights'] = './models/reader/transformerocr_v2.pth'
-#config['weights'] = 'https://drive.google.com/uc?id=18O7FJzGCrk1ecDlJxHhLLdBkvuYDjKN-'
+# config['weights'] = './models/reader/transformerocr_v2.pth'
+config['weights'] = 'https://drive.google.com/uc?id=18O7FJzGCrk1ecDlJxHhLLdBkvuYDjKN-'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
@@ -243,8 +243,8 @@ def predict(filename):
 
 
     print("total_time:{}".format(time.time()-start))
-    return render_template('predict.html', id=infors['id'], full_name=infors['full_name'], \
-                            date_of_birth=infors['date_of_birth'], \
-                            sex=infors['sex'], quoc_tich=infors['quoc_tich'], dan_toc=infors['dan_toc'], \
+    return render_template('predict.html', id=infors['id'][0], full_name=infors['full_name'][0], \
+                            date_of_birth=infors['date_of_birth'][0], \
+                            sex=infors['sex'][0], quoc_tich=infors['quoc_tich'][0], dan_toc=infors['dan_toc'], \
                             que_quan=infors['que_quan'], \
                             noi_thuong_tru=infors['noi_thuong_tru'])
