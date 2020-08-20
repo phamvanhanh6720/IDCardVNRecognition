@@ -19,41 +19,53 @@
                         </div>
                         <ul class="home-title list">
                         <li>
-                            <b>ID</b>
+                            <b>ID:</b>
                             <span>{{ id }}</span>
                         </li>
                         <li>
-                            <b>Họ tên</b>
+                            <b>Họ tên:</b>
                             <span>{{ full_name }}</span>
                         </li>                        
                         <li>
-                            <b>Ngày sinh</b>
+                            <b>Ngày sinh:</b>
                             <span>{{ date_of_birth }}</span>
                         </li>                        
                         <li>
-                            <b>Giới tính</b>
+                            <b>Giới tính:</b>
                             <span>{{ sex }}</span>
                         </li>                        
                         {% if dan_toc != "" %}
                         <li>
-                            <b>Dân tộc</b>
+                            <b>Dân tộc:</b>
                             <span>{{ dan_toc[0] }}</span>
                         </li>                        
                         {% endif %}
                         {% if quoc_tich != "" %}
                         <li>
-                            <b>Quốc tịch</b>
+                            <b>Quốc tịch:</b>
                             <span>{{ quoc_tich }}</span>
                         </li>
                         {% endif %}
                         <li>
-                            <b>Quê quán</b>
-                            <span>{{ que_quan }}</span>
+                            <b>Quê quán:</b>
+                            <span>{{ que_quan_0 }}</span>
                         </li>
+                        {% if que_quan_1 != '' %}
                         <li>
-                            <b>Nơi thường trú</b>
-                            <span>{{ noi_thuong_tru }}</span>
-                        </li>                       
+                            <b></b>
+                            <span>{{ que_quan_1 }}</span>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <b>Nơi thường trú:</b>
+                            <span>{{ noi_thuong_tru_0 }}</span>
+                        </li>
+                        {% if noi_thuong_tru_1 != '' %}
+                        <li>
+                            <b></b>
+                            <span>{{ noi_thuong_tru_1 }}</span>
+                        </li> 
+                        {% endif %}                       
                         </ul>
                 	</div>
 	    	</div>

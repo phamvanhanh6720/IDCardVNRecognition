@@ -229,16 +229,23 @@ def predict(filename):
             img = info_image[i]['image']
             s = reader.predict(img)
             infors[key].append(s)
-
-    if (len(infors['que_quan'])==2): infors['que_quan'][0] = infors['que_quan'][0] + ' ' + infors['que_quan'][1]
-    if (len(infors['noi_thuong_tru'])==2): infors['noi_thuong_tru'][0] = infors['noi_thuong_tru'][0] + ', ' + infors['noi_thuong_tru'][1]
-
-    print(filename)
+    que_quan_0 = infors['que_quan'][0]
+    que_quan_1 = ''
+    noi_thuong_tru_0 = infors['noi_thuong_tru'][0]
+    noi_thuong_tru_1 = ''
+    if (len(infors['que_quan'])==2): 
+        que_quan_1 = infors['que_quan'][1]
+    if (len(infors['noi_thuong_tru'])==2):
+        noi_thuong_tru_1 = infors['noi_thuong_tru'][1]        
 
     print("total_time:{}".format(time.time()-start))
     return render_template('predict.html', id=infors['id'][0], full_name=infors['full_name'][0], \
                             date_of_birth=infors['date_of_birth'][0], \
-                            sex=infors['sex'][0], quoc_tich=infors['quoc_tich'][0], dan_toc=infors['dan_toc'], \
-                            que_quan=infors['que_quan'][0], \
-                            noi_thuong_tru=infors['noi_thuong_tru'][0], \
+                            sex=infors['sex'][0], \
+                            quoc_tich=infors['quoc_tich'][0], \
+                            dan_toc=infors['dan_toc'], \
+                            que_quan_0=que_quan_0, \
+                            que_quan_1=que_quan_1, \
+                            noi_thuong_tru_0=noi_thuong_tru_0, \
+                            noi_thuong_tru_1=noi_thuong_tru_1, \
                             filename=str(filename))
