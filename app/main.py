@@ -145,6 +145,7 @@ def predict(filename):
 
     # output of cropper part
     aligned_image = getattr(cropper, "image_output")
+    cv2.imwrite('app/static/' + filename, aligned_image)
     aligned_image = cv2.cvtColor(aligned_image, cv2.COLOR_BGR2RGB)
 
     """
@@ -190,16 +191,6 @@ def predict(filename):
     keys.remove("chan_dung")
     infors = dict()
 
-    # Output to HTML
-    output = { 'id': None, \
-              'full_name': None, \
-              'date_of_birth': None, \
-              'sex': None, \
-              'quoc_tich': "", \
-              'que_quan_0': None, \
-              'que_quan_1': None, \
-              'noi_thuong_tru_0': None, \
-              'noi_thuong_tru_1': None}
     # init default value of quoc_tich, dan_toc
     infors['quoc_tich'] = ""
     infors['dan_toc'] = ""
@@ -239,12 +230,15 @@ def predict(filename):
             s = reader.predict(img)
             infors[key].append(s)
 
+    if (len(infors['que_quan'])==2): infors['que_quan'][0] = infors['que_quan'][0] + ' ' + infors['que_quan'][1]
+    if (len(infors['noi_thuong_tru'])==2): infors['noi_thuong_tru'][0] = infors['noi_thuong_tru'][0] + ', ' + infors['noi_thuong_tru'][1]
 
-
+    print(filename)
 
     print("total_time:{}".format(time.time()-start))
     return render_template('predict.html', id=infors['id'][0], full_name=infors['full_name'][0], \
                             date_of_birth=infors['date_of_birth'][0], \
                             sex=infors['sex'][0], quoc_tich=infors['quoc_tich'][0], dan_toc=infors['dan_toc'], \
-                            que_quan=infors['que_quan'], \
-                            noi_thuong_tru=infors['noi_thuong_tru'])
+                            que_quan=infors['que_quan'][0], \
+                            noi_thuong_tru=infors['noi_thuong_tru'][0], \
+                            filename=str(filename))
