@@ -1,6 +1,6 @@
 # IDCardVNRecognition
 
-*Recommend: Ubuntu
+*Recommend: Ubuntu, cuda10.1
 
 Run tensorflow_model_server:
 
