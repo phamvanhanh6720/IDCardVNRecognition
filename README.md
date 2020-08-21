@@ -20,7 +20,7 @@ $ tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=.
 # step 5
 ./app/static/images: Đặt ảnh bạn cần đọc vào đó
 
-./models/serving.config: chỉnh lại base_path của bạn ( "/home/{user_name/.../IDCardRecognition/models/{model_name}"
+./models/serving.config: chỉnh lại base_path của bạn ( "/home/{user_name}/.../IDCardRecognition/models/{model_name}"
 
 # step 6
 $ python run.py
