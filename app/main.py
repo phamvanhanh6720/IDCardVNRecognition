@@ -242,7 +242,7 @@ def predict(filename):
     return render_template('predict.html', id=infors['id'][0], full_name=infors['full_name'][0], \
                             date_of_birth=infors['date_of_birth'][0], \
                             sex=infors['sex'][0], \
-                            quoc_tich=infors['quoc_tich'][0], \
+                            quoc_tich=infors['quoc_tich'], \
                             dan_toc=infors['dan_toc'], \
                             que_quan_0=que_quan_0, \
                             que_quan_1=que_quan_1, \
