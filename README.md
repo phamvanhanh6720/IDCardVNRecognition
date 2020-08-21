@@ -10,7 +10,6 @@ curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.re
 
 # step 2
 sudo apt-get update && sudo apt-get install tensorflow-model-server
-# or apt-get upgrade tensorflow-model-server
 
 # step 3
 pip install tensorflow-serving-api
