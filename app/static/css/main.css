@@ -152,7 +152,8 @@ iframe {
 }
 
 .wrap-login100 {
-  width: 960px;
+  width: 1100px;
+  height: 200%;
   background: #fff;
   border-radius: 10px;
   overflow: hidden;
@@ -163,7 +164,7 @@ iframe {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  padding: 50px 50px 50px 50px;
+  padding: 150px 150px 150px 150px;
 }
 
 /*------------------------------------------------------------------
@@ -265,6 +266,14 @@ iframe {
 
 .login100-form-btn:hover {
   background: #333333;
+}
+
+.zoom {
+  transition: 1s;
+}
+
+.zoom:hover {
+  transform: scale(1.5)
 }
 
 /*------------------------------------------------------------------
