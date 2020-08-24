@@ -268,11 +268,11 @@ iframe {
   background: #333333;
 }
 
-.zoom {
+.zoom-img {
   transition: 1s;
 }
 
-.zoom:hover {
+.zoom-img:hover {
   transform: scale(1.5)
 }
 

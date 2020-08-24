@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>ID Card Recognition</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!--<link rel="stylesheet" type="text/css" href="static/vendor/bootstrap/css/bootstrap.min.css">-->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+	<!--<link rel="stylesheet" type="text/css" href="static/fonts/font-awesome-4.7.0/css/font-awesome.min.css">-->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.0/animate.css" integrity="sha512-VFXHmyaAM2CkNU+TogLhWl7rjTFcXo1YRsruJHHmsZasKSn6LlFivRJ6gVG4mlJtybmAkZL3z9sxqGo5aX0fIw==" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="../static/css/main.css">
+	<link rel="stylesheet" type="text/css" href="../static/css/util.css">
+</head>
+<body>
+	
+	<div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100">
+				<form action="/upload-image" method="POST" enctype="multipart/form-data" style="margin:auto"> 
+					<span class="login100-form-title">
+						Upload Image
+					</span>
+					
+					<div class="wrap-input100 validate-input">
+						<input type="file" name="image">
+					</div>
+					
+					<div class="container-login100-form-btn">
+						<button class="login100-form-btn" type="submit">
+							Upload
+						</button>
+					</div>
+
+                    <div class="text-center p-t-136">
+                        Your image was invalid. Please upload again!
+                    </div>
+
+					<div class="text-center p-t-136">
+						<a class="txt2" href="https://www.facebook.com/phamvanhanh2000" target="_blank">
+							Contact 
+							<i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+<!--===============================================================================================-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+<!--===============================================================================================-->
+</body>
+</html>

@@ -25,7 +25,8 @@ from vietocr.tool.config import Cfg
 """
 config = Cfg.load_config_from_name('vgg_transformer')
 # config['weights'] = './models/reader/transformerocr_v2.pth'
-config['weights'] = 'https://drive.google.com/uc?id=18O7FJzGCrk1ecDlJxHhLLdBkvuYDjKN-'
+# config['weights'] = 'https://drive.google.com/uc?id=18O7FJzGCrk1ecDlJxHhLLdBkvuYDjKN-'
+config['weights'] = 'https://drive.google.com/uc?id=1U3IO38Vo1FNcedriHsgE7S0Fi0lWAqVz'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
@@ -139,7 +140,7 @@ def predict(filename):
 
     # respone to client if image is invalid
     if not cropper.respone_client(threshold_idcard=0.8):
-        return "invalid image"
+        return render_template('upload_image_again.html')
 
     cropper.set_image(original_image=original_image)
 
