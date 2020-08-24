@@ -1,6 +1,6 @@
 from app import app
-from flask import render_template
-from flask import request, redirect, url_for
+
+from flask import render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 import os
 
@@ -24,23 +24,24 @@ from vietocr.tool.config import Cfg
 =========================
 """
 config = Cfg.load_config_from_name('vgg_transformer')
-# config['weights'] = './models/reader/transformerocr_v2.pth'
-# config['weights'] = 'https://drive.google.com/uc?id=18O7FJzGCrk1ecDlJxHhLLdBkvuYDjKN-'
-config['weights'] = 'https://drive.google.com/uc?id=1U3IO38Vo1FNcedriHsgE7S0Fi0lWAqVz'
+# config['weights'] = './models/reader/transformerocr_best.pth'
+config['weights'] = 'https://drive.google.com/uc?export=download&id=1EaftcBJrVNDHHBnnoX1H-5n0IRX5JjCM'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
 
+
 @app.route("/")
 def index():
-    #return render_template("index.html")
     return redirect(url_for("upload_image"))
+
 
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["JPEG", "JPG", "PNG", "GIF"]
 
+
 def allowed_image(filename):
 
-    if not "." in filename:
+    if "." not in filename:
         return False
 
     ext = filename.rsplit(".", 1)[1]
@@ -49,6 +50,7 @@ def allowed_image(filename):
         return True
     else:
         return False
+
 
 def reorient_image(im):
     im = Image.open(im)
@@ -75,6 +77,7 @@ def reorient_image(im):
     except (KeyError, AttributeError, TypeError, IndexError):
         return im
 
+
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():
     if request.method == "POST":
@@ -91,12 +94,9 @@ def upload_image():
                 reoriented_img = reorient_image(os.path.join(app.config["IMAGE_UPLOADS"], filename))
                 reoriented_img.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
 
-                print("Image saved")
-
                 return redirect(url_for("predict", filename=filename))
 
             else:
-                print("That file extension is not allowed")
                 return redirect(request.url)
 
     return render_template("upload_image.html")
@@ -126,7 +126,6 @@ def predict(filename):
         img = np.expand_dims(img, axis=0)
     # request to cropper model
     request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img, dtype=np.float32, shape=img.shape))
-    print(filepath)
     try:
         result = stub.Predict(request, 10.0)
         result = result.outputs["tf_op_layer_concat_14"].float_val
@@ -146,7 +145,7 @@ def predict(filename):
 
     # output of cropper part
     aligned_image = getattr(cropper, "image_output")
-    cv2.imwrite('app/static/' + filename, aligned_image)
+    cv2.imwrite('app/static/aligned_images/' + filename, aligned_image)
     aligned_image = cv2.cvtColor(aligned_image, cv2.COLOR_BGR2RGB)
 
     """
@@ -234,19 +233,19 @@ def predict(filename):
     que_quan_1 = ''
     noi_thuong_tru_0 = infors['noi_thuong_tru'][0]
     noi_thuong_tru_1 = ''
-    if (len(infors['que_quan'])==2): 
+    if len(infors['que_quan']) == 2:
         que_quan_1 = infors['que_quan'][1]
-    if (len(infors['noi_thuong_tru'])==2):
+    if len(infors['noi_thuong_tru']) == 2:
         noi_thuong_tru_1 = infors['noi_thuong_tru'][1]        
 
     print("total_time:{}".format(time.time()-start))
-    return render_template('predict.html', id=infors['id'][0], full_name=infors['full_name'][0], \
-                            date_of_birth=infors['date_of_birth'][0], \
-                            sex=infors['sex'][0], \
-                            quoc_tich=infors['quoc_tich'], \
-                            dan_toc=infors['dan_toc'], \
-                            que_quan_0=que_quan_0, \
-                            que_quan_1=que_quan_1, \
-                            noi_thuong_tru_0=noi_thuong_tru_0, \
-                            noi_thuong_tru_1=noi_thuong_tru_1, \
+    return render_template('predict.html', id=infors['id'][0], full_name=infors['full_name'][0],
+                            date_of_birth=infors['date_of_birth'][0],
+                            sex=infors['sex'][0],
+                            quoc_tich=infors['quoc_tich'],
+                            dan_toc=infors['dan_toc'],
+                            que_quan_0=que_quan_0,
+                            que_quan_1=que_quan_1,
+                            noi_thuong_tru_0=noi_thuong_tru_0,
+                            noi_thuong_tru_1=noi_thuong_tru_1,
                             filename=str(filename))

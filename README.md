@@ -18,7 +18,7 @@ $ pip install tensorflow-serving-api
 $ tensorflow_model_server --port=8500 --rest_api_port=8501 --model_config_file=./models/serving.config
 
 # step 5
-./app/static/images: Folder chứa ảnh bạn upload
+./app/static/images: folder trong server chứa ảnh được upload lên
 
 ./models/serving.config: chỉnh lại base_path của bạn ( "/home/{user_name}/.../IDCardRecognition/models/{model_name}"
 

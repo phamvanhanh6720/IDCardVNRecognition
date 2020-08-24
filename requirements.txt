@@ -1,6 +1,14 @@
 tensorflow-serving-api
 opencv 3.4.10
-torch 
-vietocr 0.1.9
+#recommend
+torch~=1.6.0+cu101
 pyyaml
-easydict
+easydict~=1.9
+
+tensorflow~=2.2.0
+numpy~=1.18.3
+Flask~=1.1.2
+Werkzeug~=1.0.1
+Pillow~=7.0.0
+vietocr~=0.1.9
+matplotlib~=3.3.0
