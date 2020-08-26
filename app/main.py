@@ -25,7 +25,7 @@ from vietocr.tool.config import Cfg
 """
 config = Cfg.load_config_from_name('vgg_transformer')
 # config['weights'] = './models/reader/transformerocr_best.pth'
-config['weights'] = 'https://drive.google.com/uc?export=download&id=1EaftcBJrVNDHHBnnoX1H-5n0IRX5JjCM'
+config['weights'] = 'https://drive.google.com/uc?export=download&id=1-olev206xLgXYf7rnwHrcZLxxLg5rs0p'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
@@ -239,7 +239,7 @@ def predict(filename):
         noi_thuong_tru_1 = infors['noi_thuong_tru'][1]        
 
     print("total_time:{}".format(time.time()-start))
-    return render_template('predict.html', id=infors['id'][0], full_name=infors['full_name'][0],
+    return render_template('predict.html', id=infors['id'][0].replace(" ",""), full_name=infors['full_name'][0],
                             date_of_birth=infors['date_of_birth'][0],
                             sex=infors['sex'][0],
                             quoc_tich=infors['quoc_tich'],
