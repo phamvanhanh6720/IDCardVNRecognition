@@ -1,9 +1,9 @@
 # IDCardVNRecognition
 
-*Recommend: Ubuntu, cuda10.1
-Việc triển khai model, tôi sử dụng tensorflow-serving và flask.Vì vậy để có thể chạy demo trên máy cá nhân,các bạn cần cài đặt tensorflow-serving.
+*Recommend: Ubuntu, cuda10.1 
+*Việc triển khai model, tôi sử dụng tensorflow-serving và flask.Vì vậy để có thể chạy demo trên máy cá nhân,các bạn cần cài đặt tensorflow-serving.
 
-#Hướng dẫn cài đặt tensorflow-serving
+# Hướng dẫn cài đặt tensorflow-serving
 
 # step 1
 $ echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" | sudo tee /etc/apt/sources.list.d/tensorflow-serving.list && \
