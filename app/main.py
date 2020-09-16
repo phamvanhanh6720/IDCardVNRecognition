@@ -24,8 +24,8 @@ from vietocr.tool.config import Cfg
 =========================
 """
 config = Cfg.load_config_from_name('vgg_transformer')
-# config['weights'] = './models/reader/transformerocr_best.pth'
-config['weights'] = 'https://drive.google.com/uc?export=download&id=1EaftcBJrVNDHHBnnoX1H-5n0IRX5JjCM'
+config['weights'] = '/home/phamvanhanh/PycharmProjects/weights_transformerocr/transformerocr_v7.pth'
+#config['weights'] = 'https://drive.google.com/uc?export=download&id=1EaftcBJrVNDHHBnnoX1H-5n0IRX5JjCM'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
@@ -34,7 +34,6 @@ reader = Predictor(config)
 @app.route("/")
 def index():
     return redirect(url_for("upload_image"))
-
 
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["JPEG", "JPG", "PNG", "GIF"]
 
