@@ -27,7 +27,7 @@ config = Cfg.load_config_from_name('vgg_transformer')
 # config['weights'] = '/home/phamvanhanh/PycharmProjects/weights_transformerocr/transformerocr_v7.pth'
 config['weights'] = 'https://drive.google.com/uc?export=download&id=1EaftcBJrVNDHHBnnoX1H-5n0IRX5JjCM'
 # config['weights'] = './models/reader/transformerocr_best.pth'
-config['weights'] = 'https://drive.google.com/uc?export=download&id=1-olev206xLgXYf7rnwHrcZLxxLg5rs0p'
+# config['weights'] = 'https://drive.google.com/uc?export=download&id=1-olev206xLgXYf7rnwHrcZLxxLg5rs0p'
 config['device'] = 'cuda:0'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
