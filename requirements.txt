@@ -3,7 +3,7 @@ numpy==1.18.3
 Flask==1.1.2
 Werkzeug==1.0.1
 Pillow==7.1.0
-vietocr==0.1.9
+vietocr==0.3.2
 easydict==1.9
 matplotlib==3.3.0
 torch==1.6.0+cu101
