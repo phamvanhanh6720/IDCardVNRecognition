@@ -11,8 +11,8 @@ detector/__pycache__
 reader/__pycache__
 
 # image
-app/static/aligned_images
-app/static/images
+app/static/aligned_images/*
+app/static/images/*
 
 # config
 models/serving_2.config
