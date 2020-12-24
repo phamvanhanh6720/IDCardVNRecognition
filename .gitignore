@@ -1,0 +1,8 @@
+.vscode/
+.idea/
+__pycache__/
+app/__pycache__
+core/__pycache__
+cropper/__pycache__
+detector/__pycache__
+reader/__pycache__
