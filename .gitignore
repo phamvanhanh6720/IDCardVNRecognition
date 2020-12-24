@@ -1,8 +1,18 @@
+# ide
 .vscode/
 .idea/
+
+# cache
 __pycache__/
 app/__pycache__
 core/__pycache__
 cropper/__pycache__
 detector/__pycache__
 reader/__pycache__
+
+# image
+app/static/aligned_images
+app/static/images
+
+# config
+models/serving_2.config
