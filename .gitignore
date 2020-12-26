@@ -3,3 +3,6 @@
 *.jpeg
 *.png
 *.pyc
+*ttf
+*.ipynb
+.idea/

@@ -1,13 +1,12 @@
-import tensorflow as tf
 import numpy as np
 from core.utils import nms
 import cv2
-class Cropper:
 
+
+class Cropper:
     TARGET_SIZE = (416, 416)
     IMAGE_SIZE = (1920, 1200)
     def __init__(self):
-
         self.image_output = None
         self.best_bboxes = None
 

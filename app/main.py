@@ -26,11 +26,16 @@ from vietocr.tool.config import Cfg
 """
 config = Cfg.load_config_from_name('vgg_transformer')
 
-config['weights'] = 'https://drive.google.com/uc?id=13327Y1tz1ohsm5YZMyXVMPIOjoOA0OaA'
+start = time.time()
+config['weights'] = './vgg-transformer_v2.pth'
 config['device'] = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
 
+print("me Load:", time.time()- start)
+
+channel = grpc.insecure_channel("localhost:8500")
+stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
 
 @app.route("/")
 def index():
@@ -83,7 +88,6 @@ def upload_image():
     if request.method == "POST":
         if request.files:
             image = request.files["image"]
-            print(type(image))
             if image.filename == "":
                 return redirect(request.url)
 
@@ -104,9 +108,6 @@ def upload_image():
 
 @app.route("/predict/<filename>")
 def predict(filename):
-
-    channel = grpc.insecure_channel("localhost:8500")
-    stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
 
     request = predict_pb2.PredictRequest()
     # model_name
@@ -187,10 +188,18 @@ def predict(filename):
     =====================================
     """
     keys = list(info_images.keys())
-    keys.remove("thoi_han")
-    keys.remove("chan_dung")
-    infors = dict()
 
+    try:
+        keys.remove("thoi_han")
+    except Exception as e:
+        print("Thoi Han is not found")
+
+    try:
+        keys.remove("chan_dung")
+    except Exception as e:
+        print("Chan Dung is not found")
+
+    infors = dict()
     # init default value of quoc_tich, dan_toc
     infors['quoc_tich'] = ""
     infors['dan_toc'] = ""
