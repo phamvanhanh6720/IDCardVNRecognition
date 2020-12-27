@@ -22,6 +22,7 @@ class Cropper:
         self.aligned_image = None
         self.best_bboxes = None
         self.choose_image = None
+        self.points = None
 
         self.image_0 = cv2.imread(self.filepath)
         self.height, self.width, _ = self.image_0.shape
@@ -236,6 +237,29 @@ class Cropper:
 
         return warped
 
+    def check_points(self):
+        """
+        Check points whether are correctly position
+        """
+        top_left, top_right, bottom_left, bottom_right = self.points
+        flag = True
+
+        # top_left
+        if not (top_left[0] < top_right[0] and top_left[1] < bottom_left[1]):
+            raise Exception("Top Left Point is not correctly position")
+
+        # top_right
+        if not (top_right[0] > top_left[0] and top_right[1] < bottom_right[1]):
+            raise Exception("Top Right Point is not correctly position")
+
+        # bottom_left
+        if not (bottom_left[0] < bottom_right[0] and bottom_left[1] > top_left[1]):
+            raise Exception("Bottom Left Point is not correctly position")
+
+        # bottom_right
+        if not (bottom_right[0] > bottom_left[0] and bottom_right[1] > top_right[1]):
+            raise Exception("Top Left Point is not correctly position")
+
     def process(self):
         response = self.request_server()
 
@@ -245,9 +269,10 @@ class Cropper:
         # check score of idcard class
         self.respone_client(threshold_idcard=self.threshold_idcard)
 
-        points = self.convert_bbox_to_points()
-        aligned_image = self.align_image(self.choose_image, points=points)
+        setattr(self, "points", self.convert_bbox_to_points())
+        self.check_points()
 
+        aligned_image = self.align_image(self.choose_image, points=self.points)
         setattr(self, "aligned_image", aligned_image)
 
 

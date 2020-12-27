@@ -106,8 +106,11 @@ def upload_image():
 @app.route("/predict/<filename>")
 def predict(filename):
 
+    """
+    Process 1: Detect 4 corners of image
+    """
     start = time.time()
-    cropper = Cropper(stub=stub, filename=filename)
+    cropper = Cropper(stub=stub, filename=filename, iou_threshold=0.5, threshold_idcard=0.6)
     try:
         cropper.process()
     except Exception as e:
@@ -120,47 +123,26 @@ def predict(filename):
     cv2.imwrite('app/static/aligned_images/' + filename, aligned_image)
     aligned_image = cv2.cvtColor(aligned_image, cv2.COLOR_BGR2RGB)
 
-    """
-    ===========================================
-    ==== Detect informations in aligned image
-    ===========================================
-    """
+    # Process 2: Detect information area
     # preprocess aligned image
-    original_height, original_width, _ = aligned_image.shape
-    img = cv2.resize(aligned_image, Detector.TARGET_SIZE)
-    img = np.float32(img/255.)
 
-    request = predict_pb2.PredictRequest()
-    # model_name
-    request.model_spec.name = "detector_model"
-    # signature name, default is 'serving_default'
-    request.model_spec.signature_name = "serving_default"
-
-    if img.ndim == 3:
-        img = np.expand_dims(img, axis=0)
-    # new request to detector model
-    request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img, dtype=np.float32, shape=img.shape))
+    detector = Detector(stub=stub, aligned_image=aligned_image, iou_threshold=0.5)
 
     try:
-        result = stub.Predict(request, 10.0)
-        result = result.outputs["tf_op_layer_concat_14"].float_val
-        result = np.array(result).reshape((-1, 13))
-
+        detector.process()
     except Exception as e:
         print(e)
+        return render_template('upload_image_again.html')
 
-    detector = Detector()
-    detector.set_best_bboxes(result, original_width=original_width, original_height=original_height, iou_threshold=0.5)
-    detector.set_info_images(original_image=aligned_image)
     # output of detector part
-    info_images = getattr(detector, "info_images")
+    infor_images = getattr(detector, "infor_images")
 
     """
     =====================================
     ==== Reader infors from infors image
     =====================================
     """
-    keys = list(info_images.keys())
+    keys = list(infor_images.keys())
 
     try:
         keys.remove("thoi_han")
@@ -182,7 +164,7 @@ def predict(filename):
         keys.remove("quoc_tich")
 
     if "sex" in keys:
-        info_image = info_images["sex"]
+        info_image = infor_images["sex"]
         infors["sex"] = list()
         for i in range(len(info_image)):
             img = info_image[i]['image']
@@ -194,7 +176,7 @@ def predict(filename):
         keys.remove("sex")
 
     if "dan_toc" in keys:
-        info_image = info_images["dan_toc"]
+        info_image = infor_images["dan_toc"]
         infors["dan_toc"] = list()
         for i in range(len(info_image)):
             img = info_image[i]['image']
@@ -206,7 +188,7 @@ def predict(filename):
 
     for key in keys:
         infors[key] = list()
-        info_image = info_images[key]
+        info_image = infor_images[key]
         for i in range(len(info_image)):
             img = info_image[i]['image']
             s = reader.predict(img)

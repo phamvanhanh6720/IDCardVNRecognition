@@ -2,17 +2,95 @@ import tensorflow as tf
 import numpy as np
 import cv2
 from core.utils import  nms
+from tensorflow_serving.apis import predict_pb2
 
 class Detector:
     TARGET_SIZE = (416, 416)
-    def __init__(self):
+
+    def __init__(self, stub, aligned_image, iou_threshold=0.5):
         self.info_images = None
         self.best_bboxes = None
 
-    @staticmethod
-    def decode_prediction(pred, original_width, original_height, iou_threshold):
-        """
+        self.stub = stub
+        self.original_height, self.original_width, _ = aligned_image.shape
+        self.aligned_image = aligned_image
+        self.iou_threshold = iou_threshold
 
+
+    def request_server(self):
+
+        # preprocess image before request
+        img = cv2.resize(self.aligned_image, self.TARGET_SIZE)
+        img = np.float32(img/255.)
+        if img.ndim == 3:
+            img = np.expand_dims(img, axis=0)
+
+        request = predict_pb2.PredictRequest()
+        # model_name
+        request.model_spec.name = "detector_model"
+        request.model_spec.signature_name = "serving_default"
+
+        # new request to detector model
+        request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img, dtype=np.float32, shape=img.shape))
+        try:
+            result = self.stub.Predict(request, 10.0)
+            result = result.outputs["tf_op_layer_concat_14"].float_val
+            result = np.array(result).reshape((-1, 13))
+
+        except Exception as e:
+            print(e)
+
+        return result
+
+    def process(self):
+        response = self.request_server()
+        final_best_bboxes = self.decode_prediction(response, original_width=self.original_width, original_height=self.original_height,
+                                      iou_threshold=self.iou_threshold)
+
+        setattr(self, "best_bboxes", final_best_bboxes)
+        self.reponse_client()
+
+        infor_images = self.process_info_images(self.aligned_image)
+        # print(infor_images)
+        setattr(self, "infor_images", infor_images)
+
+    def reponse_client(self):
+        """
+        Check Aligned image is new id card or old id card
+        If Old ID Card:
+            Response Invalid Image
+        """
+        classes = self.best_bboxes[:, 5].astype(int)
+        scores = self.best_bboxes[:, 4]
+
+        # 2: idx of date_of_birth class
+        mask = classes == 2
+        if sum(mask) == 0:
+            raise Exception("Aligned Image is old id card")
+
+        # check position of id box and full_name box
+        # 0: idx of id class
+        mask = classes == 0
+        idxs = np.where(mask==True)[0]
+        if len(idxs) ==0:
+            raise Exception("Cannot find id box in aligned image")
+        idx_tmp = np.argsort(scores[idxs])[::-1][0]
+        id_box = (self.best_bboxes[idxs])[idx_tmp]
+
+        # 1: idx of id class
+        mask = classes == 1
+        idxs = np.where(mask==True)[0]
+        if len(idxs) == 0:
+            raise Exception("Cannot find full_name box in aligned image")
+        idx_tmp = np.argsort(scores[idxs])[::-1][0]
+        fullname_box = (self.best_bboxes[idxs])[idx_tmp]
+
+        if not(id_box[1] < fullname_box[1]):
+            raise Exception("Position of full_name box and id box are not correct")
+
+
+    def decode_prediction(self, pred, original_width, original_height, iou_threshold):
+        """
         :param pred: ndarray 2-D : respone of detector model
         :param original_width:
         :param original_height:
@@ -54,16 +132,21 @@ class Detector:
         mask = classes == 6
         if sum(mask) <= 4:
             return best_bboxes
-        scores = scores * mask
-        idxs = np.where(scores > 0)[0]
-        deletes = np.argsort(scores[idxs])[::-1][4:]
-        final_best_bboxes = np.delete(best_bboxes, deletes, axis=0)
+
+        addr_idxs = np.where(mask == True)[0]
+        idxs = np.where(mask != True)[0]
+
+        non_addr_boxes = best_bboxes[idxs]
+        addr_boxes = best_bboxes[addr_idxs]
+
+        best_addr_boxes = addr_boxes[np.argsort(scores[idxs])[::-1][:4]]
+        final_best_bboxes = np.concatenate((non_addr_boxes, best_addr_boxes), axis=0)
 
         return final_best_bboxes
 
     def decode_infor(self):
         classes = self.best_bboxes[:, 5].astype(int)
-        label = {'0': 'id', '1': 'full_name', '2': 'date_of_birth', '3': 'sex', '4': 'quoc_tich' \
+        label = {'0': 'id', '1': 'full_name', '2': 'date_of_birth', '3': 'sex', '4': 'quoc_tich'
             , '5': 'dan_toc', '6': 'address_info', '7': 'chan_dung', '8': 'thoi_han'}
         infor = {}
         for i in range(len(classes)):
@@ -127,12 +210,13 @@ class Detector:
         cropped_image = original_image[y_min:y_max, x_min: x_max]
         return cropped_image
 
-    def set_info_images(self, original_image):
+    def process_info_images(self, original_image):
         original_height, original_width, _ = original_image.shape
         infor = self.decode_infor()
         keys = infor.keys()
 
         infor_images = {}
+
         for key in keys:
             infor_images[key] = []
             for i in range(len(infor[key])):
@@ -142,10 +226,6 @@ class Detector:
                 cropped_image = self.crop_image(original_image, int(bbox_coor[0]), int(bbox_coor[1]), int(bbox_coor[2]), int(bbox_coor[3]))
                 infor_images[key].append({'image': cropped_image, 'score': score})
 
-        self.info_images = infor_images
+        return infor_images
 
-
-
-    def set_best_bboxes(self, pred, original_width, original_height, iou_threshold):
-        self.best_bboxes = self.decode_prediction(pred, original_width, original_height, iou_threshold)
 
