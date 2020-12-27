@@ -1,9 +1,5 @@
-id
-full_name
-date_of_birth
-sex
-quoc_tich
-dan_toc
-address_info
-chan_dung
-thoi_han
+top_left
+top_right
+bottom_left
+bottom_right
+id_card

@@ -6,3 +6,5 @@
 *ttf
 *.ipynb
 .idea/
+*.weights
+models

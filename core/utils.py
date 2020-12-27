@@ -95,42 +95,20 @@ def get_anchors(anchors_path, tiny=False):
         return anchors.reshape(3, 3, 2)
 
 
-def preprocess_image(image_path, target_size):
-    """
-    :param image_path:
-    :return: batch_img, original_width, original_height
-    """
-
-    if (not("." in image_path)):
-        img = base64.b64decode(image_path)
-        img = Image.open(io.BytesIO(img))
-        img = np.array(img)
-        original_width, original_height = img.shape[1], img.shape[0]
-        original_image = Image.fromarray(img)
-        img = original_image.resize(target_size, Image.ANTIALIAS)
-        img = np.array(img, np.float32)
-        return img, original_image, original_width, original_height
-
-    original_image = cv2.imread(image_path)
-    original_height, original_width, _ = original_image.shape
+def preprocess_image(original_image, target_size):
 
     img = cv2.resize(original_image, target_size)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     img = img / 255.
+    img = np.float32(img)
+    img = np.expand_dims(img, axis=0)
 
-    img_90 = cv2.rotate(img, cv2.ROTATE_90_CLOCKWISE)
-    img_180 = cv2.rotate(img, cv2.ROTATE_180)
-    img_270 = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
-    batch_img = np.stack((img, img_90, img_180, img_270))
-
-    batch_img = np.float32(batch_img)
     # convert ndarray to Tensorflow tensor
     # img = tf.convert_to_tensor(img)
     # img = tf.expand_dims(img, axis=0)
     # img = tf.cast(img, tf.float32)
 
-    return batch_img, original_image, original_width, original_height
-
+    return img
 
 def draw_bbox(image, bboxes, classes=read_class_names(cfg.YOLO.CLASSES), show_label=True):
     num_classes = len(classes)

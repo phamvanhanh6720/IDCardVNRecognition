@@ -17,7 +17,7 @@ import time
 from PIL import Image
 import torch
 
-from reader.reader import  Predictor
+from reader.reader import Predictor
 from vietocr.tool.config import Cfg
 """
 =========================
@@ -26,13 +26,10 @@ from vietocr.tool.config import Cfg
 """
 config = Cfg.load_config_from_name('vgg_transformer')
 
-start = time.time()
 config['weights'] = './vgg-transformer_v2.pth'
 config['device'] = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 config['predictor']['beamsearch'] = False
 reader = Predictor(config)
-
-print("me Load:", time.time()- start)
 
 channel = grpc.insecure_channel("localhost:8500")
 stub = prediction_service_pb2_grpc.PredictionServiceStub(channel)
@@ -109,43 +106,17 @@ def upload_image():
 @app.route("/predict/<filename>")
 def predict(filename):
 
-    request = predict_pb2.PredictRequest()
-    # model_name
-    request.model_spec.name = "cropper_model"
-    # signature name, default is 'serving_default'
-    request.model_spec.signature_name = "serving_default"
     start = time.time()
-    """
-    =========================================
-    ===== Crop and align id card image
-    =========================================
-    """
-    filepath = app.config["IMAGE_UPLOADS"]+"/"+filename
-    # preprocess image
-    img, original_image, original_width, original_height = preprocess_image(filepath, Cropper.TARGET_SIZE)
-    if img.ndim == 3:
-        img = np.expand_dims(img, axis=0)
-    # request to cropper model
-    request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img, dtype=np.float32, shape=img.shape))
+    cropper = Cropper(stub=stub, filename=filename)
     try:
-        result = stub.Predict(request, 10.0)
-        result = result.outputs["tf_op_layer_concat_14"].float_val
-        result = np.array(result).reshape((-1, 9))
-
+        cropper.process()
     except Exception as e:
         print(e)
-
-    cropper = Cropper()
-    cropper.set_best_bboxes(result, original_width=original_width, original_height=original_height, iou_threshold=0.5)
-
-    # respone to client if image is invalid
-    if not cropper.respone_client(threshold_idcard=0.8):
         return render_template('upload_image_again.html')
 
-    cropper.set_image(original_image=original_image)
-
     # output of cropper part
-    aligned_image = getattr(cropper, "image_output")
+    aligned_image = getattr(cropper, "aligned_image")
+    del cropper
     cv2.imwrite('app/static/aligned_images/' + filename, aligned_image)
     aligned_image = cv2.cvtColor(aligned_image, cv2.COLOR_BGR2RGB)
 
@@ -158,6 +129,8 @@ def predict(filename):
     original_height, original_width, _ = aligned_image.shape
     img = cv2.resize(aligned_image, Detector.TARGET_SIZE)
     img = np.float32(img/255.)
+
+    request = predict_pb2.PredictRequest()
     # model_name
     request.model_spec.name = "detector_model"
     # signature name, default is 'serving_default'
