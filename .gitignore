@@ -7,4 +7,5 @@
 *.ipynb
 .idea/
 *.weights
+*.cfg
 models

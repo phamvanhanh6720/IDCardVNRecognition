@@ -10,12 +10,13 @@ class Cropper:
     TARGET_SIZE = (416, 416)
     IMAGE_SIZE = (1920, 1200)
 
-    def __init__(self, config_path, weight_path, iou_threshold=0.5, idcard_threshold=0.8):
+    def __init__(self, config_path, weight_path, iou_threshold=0.3, score_threshold=0.5, idcard_threshold=0.8):
 
         self.iou_threshold = iou_threshold
         self.idcard_threshold = idcard_threshold
+        self.iou_threshold = iou_threshold
+        self.score_threshold = score_threshold
 
-        self.aligned_image = None
         self.best_bboxes = None
         # coordinate of 4 corners
         self.points = None
@@ -35,7 +36,7 @@ class Cropper:
 
         return img
 
-    def infer_yolo(self, image: np.ndarray, threshold=0.5, nms_threshold=0.3):
+    def infer_yolo(self, image: np.ndarray):
 
         height, width, _ = image.shape
         img = self.preprocess_img(image)
@@ -54,7 +55,7 @@ class Cropper:
                 confidence = scores[class_id]
                 # filter out weak predictions by ensuring the detected
                 # probability is greater than the minimum probability
-                if confidence >= threshold:
+                if confidence >= self.score_threshold:
                     # scale the bounding box coordinates back relative to the
                     # size of the image
 
@@ -71,7 +72,8 @@ class Cropper:
                     class_ids.append(class_id)
 
         # nms
-        idxs: np.ndarray = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=threshold, nms_threshold=nms_threshold)
+        idxs: np.ndarray = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=self.score_threshold,
+                                            nms_threshold=self.iou_threshold)
 
         best_b_boxes = list()
         if len(idxs) > 0:
@@ -188,7 +190,7 @@ class Cropper:
 
         return True
 
-    def process(self, filepath):
+    def process(self, filepath) -> object:
         """
         Process image. Return True if image is id card. Otherwise return False
         """
@@ -229,14 +231,13 @@ class Cropper:
             warped = align_image(image_270, self.points)
 
         if warped is not None:
-            setattr(self, "aligned_image", warped)
             is_card = self._is_id_card()
             if is_card:
                 setattr(self, 'is_id_card', True)
             else:
                 setattr(self, 'is_id_card', False)
-                return False
+                return False, getattr(self, "is_id_card"), None
 
-            return True
+            return True, getattr(self, "is_id_card"), warped
 
-        return False
+        return False, None, None
