@@ -190,12 +190,12 @@ class Cropper:
 
         return True
 
-    def process(self, filepath) -> object:
+    def process(self, image) -> object:
         """
         Process image. Return True if image is id card. Otherwise return False
         """
         # Raw Image
-        image_0 = cv2.imread(filepath)
+        image_0 = image
 
         # Rotate 90
         image_90 = cv2.rotate(image_0, cv2.ROTATE_90_CLOCKWISE)
