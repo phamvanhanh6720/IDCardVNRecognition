@@ -3,12 +3,12 @@ import time
 import numpy as np
 
 if __name__ == '__main__':
-    config_path = '/home/phamvanhanh/PycharmProjects/ComputerVison/IDCardVNRecognition/Test_Opencv/yolotinyv4_cccd.cfg'
-    weigth_path = '/home/phamvanhanh/PycharmProjects/ComputerVison/IDCardVNRecognition/Test_Opencv/yolotinyv4_cccd_final.weights'
+    config_path = '/home/phamvanhanh/PycharmProjects/ComputerVison/IDCardVNRecognition/cropper/yolov4_tiny.cfg'
+    weigth_path = '/home/phamvanhanh/PycharmProjects/ComputerVison/IDCardVNRecognition/cropper/yolov4_tiny_final.weights'
 
     net = cv2.dnn.readNetFromDarknet(config_path, weigth_path)
 
-    img_path = '/media/phamvanhanh/3666AAB266AA7273/DATASET/Dataset_CCCD/aligned/aligned553.jpg'
+    img_path = '/home/phamvanhanh/PycharmProjects/ComputerVison/IDCardVNRecognition/Test_Opencv/24.jpg'
     image = cv2.imread(img_path)
     (H, W) = image.shape[:2]
 
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.5,
                             0.3)
 
-    labelsPath = '/home/phamvanhanh/PycharmProjects/ComputerVison/IDCardVNRecognition/Test_Opencv/cccd.names'
+    labelsPath = '/home/phamvanhanh/PycharmProjects/ComputerVison/IDCardVNRecognition/Test_Opencv/obj.names'
     LABELS = open(labelsPath).read().strip().split("\n")
     COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
                                dtype="uint8")
@@ -71,8 +71,8 @@ if __name__ == '__main__':
             cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
             text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
             cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX,
-                        1, color, 2)
+                        2, color, 2)
     # show the output image
-    image = cv2.resize(image, (0, 0),fx=0.5, fy=0.5)
+    image = cv2.resize(image, (0, 0),fx=0.25, fy=0.25)
     cv2.imshow("Image", image)
     cv2.waitKey(0)
