@@ -90,6 +90,7 @@ def upload_image():
 
             if allowed_image(image.filename):
                 filename = secure_filename(image.filename)
+                filename = str(time.time())+filename
                 image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
 
                 reoriented_img = reorient_image(os.path.join(app.config["IMAGE_UPLOADS"], filename))

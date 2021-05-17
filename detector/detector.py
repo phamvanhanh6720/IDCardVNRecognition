@@ -4,6 +4,7 @@ import cv2
 from core.utils import  nms
 from tensorflow_serving.apis import predict_pb2
 
+
 class Detector:
     TARGET_SIZE = (416, 416)
 
@@ -15,7 +16,6 @@ class Detector:
         self.original_height, self.original_width, _ = aligned_image.shape
         self.aligned_image = aligned_image
         self.iou_threshold = iou_threshold
-
 
     def request_server(self):
 
@@ -88,7 +88,6 @@ class Detector:
         if not(id_box[1] < fullname_box[1]):
             raise Exception("Position of full_name box and id box are not correct")
 
-
     def decode_prediction(self, pred, original_width, original_height, iou_threshold):
         """
         :param pred: ndarray 2-D : respone of detector model
@@ -146,8 +145,8 @@ class Detector:
 
     def decode_infor(self):
         classes = self.best_bboxes[:, 5].astype(int)
-        label = {'0': 'id', '1': 'full_name', '2': 'date_of_birth', '3': 'sex', '4': 'quoc_tich'
-            , '5': 'dan_toc', '6': 'address_info', '7': 'chan_dung', '8': 'thoi_han'}
+        label = {'0': 'id', '1': 'full_name', '2': 'date_of_birth', '3': 'sex', '4': 'quoc_tich',
+                 '5': 'dan_toc', '6': 'address_info', '7': 'chan_dung', '8': 'thoi_han'}
         infor = {}
         for i in range(len(classes)):
             key = label[str(classes[i])]

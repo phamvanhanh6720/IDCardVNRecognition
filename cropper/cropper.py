@@ -1,28 +1,33 @@
-import numpy as np
-from core.utils import nms
-import cv2
-from core.utils import preprocess_image, draw_bbox
 import os
+
+import cv2
+import numpy as np
+
 from app import app
-from tensorflow_serving.apis import predict_pb2
-import tensorflow as tf
-import grpc
-from tensorflow_serving.apis import prediction_service_pb2_grpc
+
 
 class Cropper:
 
     TARGET_SIZE = (416, 416)
     IMAGE_SIZE = (1920, 1200)
-    def __init__(self, stub, filename, iou_threshold=0.5, threshold_idcard=0.8):
 
-        self.stub = stub
+    def __init__(self, filename, config_path, weight_path, iou_threshold=0.5, idcard_threshold=0.8):
+
         self.filepath = os.path.join(app.config["IMAGE_UPLOADS"], filename)
         self.iou_threshold = iou_threshold
-        self.threshold_idcard = threshold_idcard
+        self.idcard_threshold = idcard_threshold
+
         self.aligned_image = None
         self.best_bboxes = None
         self.choose_image = None
         self.points = None
+
+        # Model
+        self.config_path = config_path
+        self.weight_path = weight_path
+        self.net = cv2.dnn.readNetFromDarknet(self.config_path, self.weight_path)
+        self.ln = self.net.getLayerNames()
+        self.ln = [self.ln[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
 
         self.image_0 = cv2.imread(self.filepath)
         self.height, self.width, _ = self.image_0.shape
@@ -36,58 +41,20 @@ class Cropper:
         # Rotate 270
         self.image_270 = cv2.rotate(self.image_0, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-    def request_server(self):
-        request = predict_pb2.PredictRequest()
-        # model_name
-        request.model_spec.name = "cropper_model"
-        # signature name, default is 'serving_default'
-        request.model_spec.signature_name = "serving_default"
+    @staticmethod
+    def preprocess_img(img):
+        img = cv2.dnn.blobFromImage(img, 1 / 255.0, (416, 416))
 
-        img_1 = preprocess_image(self.image_0, self.TARGET_SIZE)
-        img_2 = preprocess_image(self.image_90, self.TARGET_SIZE)
-        img_3 = preprocess_image(self.image_180, self.TARGET_SIZE)
-        img_4 = preprocess_image(self.image_270, self.TARGET_SIZE)
+        return img
 
-        # request to cropper model
-        # img_1
-        request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img_1, dtype=np.float32, shape=img_1.shape))
-        try:
-            result_1 = self.stub.Predict(request, 10.0)
-            result_1 = result_1.outputs["tf_op_layer_concat_14"].float_val
-            result_1 = np.array(result_1).reshape(-1, 9)
-        except Exception as e:
-            print(e)
+    def _infer(self):
 
-        # img_2
-        request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img_2, dtype=np.float32, shape=img_2.shape))
-        try:
-            result_2 = self.stub.Predict(request, 10.0)
-            result_2 = result_2.outputs["tf_op_layer_concat_14"].float_val
-            result_2 = np.array(result_2).reshape(-1, 9)
-        except Exception as e:
-            print(e)
+        # preprocess image
+        img_0 = self.preprocess_img(self.image_0)
+        img_90 = self.preprocess_img(self.image_90)
+        img_180 = self.preprocess_img(self.image_180)
+        img_270 = self.preprocess_img(self.image_270)
 
-        # img_3
-        request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img_3, dtype=np.float32, shape=img_3.shape))
-        try:
-            result_3 = self.stub.Predict(request, 10.0)
-            result_3 = result_3.outputs["tf_op_layer_concat_14"].float_val
-            result_3 = np.array(result_3).reshape(-1, 9)
-        except Exception as e:
-            print(e)
-
-        # img_4
-        request.inputs["input_1"].CopyFrom(tf.make_tensor_proto(img_4, dtype=np.float32, shape=img_4.shape))
-        try:
-            result_4 = self.stub.Predict(request, 10.0)
-            result_4 = result_4.outputs["tf_op_layer_concat_14"].float_val
-            result_4 = np.array(result_4).reshape(-1, 9)
-        except Exception as e:
-            print(e)
-
-        response = [result_1, result_2, result_3, result_4]
-
-        return response
 
     def decode_total(self, response, iou_threshold=0.5):
         idx = 10
@@ -95,12 +62,14 @@ class Cropper:
         for i in range(4):
             if i % 2 == 0:
                 width, height = self.width, self.height
-                if self.decode_prediction(response[i], original_width=width, original_height=height, iou_threshold=iou_threshold):
+                if self.decode_prediction(response[i], original_width=width, original_height=height,
+                                          iou_threshold=iou_threshold):
                     idx = i
 
             else:
                 width, height = self.height, self.width
-                if self.decode_prediction(response[i], original_width=width, original_height=height, iou_threshold=iou_threshold):
+                if self.decode_prediction(response[i], original_width=width, original_height=height,
+                                          iou_threshold=iou_threshold):
                     idx = i
         if idx == 10:
             raise Exception("Image is Invalid")
@@ -113,35 +82,63 @@ class Cropper:
         if idx == 3:
             setattr(self, "choose_image", self.image_270)
 
-    def decode_prediction(self, pred, original_width, original_height, iou_threshold):
-        """
-        :param pred: ndarray 2-D : respone of cropper model
-        :param original_width:
-        :param original_height:
-        :param iou_threshold:
-        :return: ndarray best_bboxes: (x_min, y_min, x_max, y_max, score, class)
-        """
+    def decode_yolo(self, image: np.ndarray, threshold=0.5, nms_threshold=0.5):
 
-        # coordinates[i] : (y_min, x_min, y_max, x_max)
-        coordinates = pred[:, 0:4]
-        y_mins = coordinates[:, 0:1] * original_height
-        x_mins = coordinates[:, 1:2] * original_width
-        y_maxs = coordinates[:, 2:3] * original_height
-        x_maxs = coordinates[:, 3:4] * original_width
+        height, width, _ = image.shape
+        img = self.preprocess_img(image)
+        self.net.setInput(img)
+        layer_outputs = self.net.forward(self.ln)
 
-        scores = pred[:, 4:9]
-        classes = np.argmax(scores, axis=-1)
-        classes = np.expand_dims(classes, axis=-1)
-        scores = np.max(scores, axis=-1, keepdims=True)
+        boxes = []
+        confidences = []
+        class_ids = []
 
-        # bboxes : (xmin, ymin, xmax, ymax, score, class)
-        bboxes = np.hstack((x_mins, y_mins, x_maxs, y_maxs, scores, classes))
-        best_bboxes = nms(bboxes, iou_threshold=iou_threshold)
-        best_bboxes = np.array(best_bboxes)
+        for output in layer_outputs:
+            # loop over each of the layer output
+            for detection in output:
+                scores = detection[5:]
+                class_id = np.argmax(scores)
+                confidence = scores[class_id]
+                # filter out weak predictions by ensuring the detected
+                # probability is greater than the minimum probability
+                if confidence >= threshold:
+                    # scale the bounding box coordinates back relative to the
+                    # size of the image
 
+                    box = detection[0:4] * np.array([width, height, width, height])
+                    (center_x, center_y, box_width, box_height) = box.astype("int")
+
+                    x_min = int(center_x - (box_width / 2))
+                    y_min = int(center_y - (box_height / 2))
+
+                    x_max = int(center_x + (box_width / 2))
+                    y_max = int(center_y + (box_height / 2))
+
+                    boxes.append([x_min, y_min, x_max, y_max])
+                    confidences.append(float(confidence))
+                    class_ids.append(class_id)
+
+        # nms
+        idxs: np.ndarray = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=threshold, nms_threshold=nms_threshold)
+
+        best_b_boxes = list()
+        if len(idxs) > 0:
+            for i in idxs.flatten():
+                x_min, y_min, x_max, y_max = boxes[i]
+                score = confidences[i]
+                class_id = class_ids[i]
+
+                # x_min, y_min, x_max, y_max, score, class
+                best_b_boxes.append([x_min, y_min, x_max, y_max, score, class_id])
+
+        return best_b_boxes
+
+    def _is_id_card(self, best_b_boxes):
+
+        best_b_boxes: np.ndarray = np.array(best_b_boxes)
         num_objs = [0 for i in range(5)]
-        for i in range(len(best_bboxes)):
-            class_idx = int(best_bboxes[i, 5])
+        for i in range(len(best_b_boxes)):
+            class_idx = int(best_b_boxes[i, 5])
             num_objs[class_idx] += 1
 
         # check image whether contains 5 classes
@@ -149,14 +146,14 @@ class Cropper:
             return False
         else:
             # select best box of each class
-            final_best_bboxes = np.zeros((5, best_bboxes.shape[1]))
-            classes = best_bboxes[:, 5].astype(int)
-            scores = best_bboxes[:, 4]
+            final_best_bboxes = np.zeros((5, best_b_boxes.shape[1]))
+            classes = best_b_boxes[:, 5].astype(int)
+            scores = best_b_boxes[:, 4]
 
             for i in range(5):
                 mask = classes == i
                 idx = np.argmax(scores * mask)
-                final_best_bboxes[i] = best_bboxes[idx]
+                final_best_bboxes[i] = best_b_boxes[idx]
 
             setattr(self, "best_bboxes", final_best_bboxes)
 
@@ -261,7 +258,7 @@ class Cropper:
             raise Exception("Top Left Point is not correctly position")
 
     def process(self):
-        response = self.request_server()
+        response = self._infer()
 
         # get best bounding boxes
         self.decode_total(response, iou_threshold=self.iou_threshold)
