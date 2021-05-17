@@ -8,5 +8,6 @@
 .idea/
 *.weights
 *.cfg
+*yml
 models
 Test_Opencv
