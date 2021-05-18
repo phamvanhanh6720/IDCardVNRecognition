@@ -8,6 +8,10 @@
   
 ## Install Dependencies
 ```angular2html
+# Install an ASGI server, for production such as Uvicorn or Hypercorn.
+pip3 install uvicorn[standard]
+```
+```angular2html
 pip3 install -r requirements.txt
 ```
 
