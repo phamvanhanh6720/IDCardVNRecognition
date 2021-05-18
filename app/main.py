@@ -75,32 +75,48 @@ def extract(item: Item):
                 for i in range(len(info_images[id])):
                     info[label].append(reader.predict(info_images[id][i]))
 
+        info['nationality'] = 'Việt Nam'
+        if 'sex' in info.keys():
+            if 'Na' in info['sex']:
+                info['sex'] = 'Nam'
+            else:
+                info['sex'] = 'Nữ'
+
         return {'message': 'approved', 'description': 'image is id card', 'info': info}
 
 
 @app.get('/', response_class=HTMLResponse)
 async def index(request: Request):
-    return templates.TemplateResponse(os.path.join('upload_image.html'), {'request': request, 'id': 1})
+    return templates.TemplateResponse(os.path.join('upload_image.html'), {'request': request})
 
 
 @app.post('/upload_image/')
-def upload_image(file: UploadFile = File(...)):
+def upload_image(request: Request, file: UploadFile = File(...)):
     if file.content_type in ['image/jpeg', 'image/png']:
 
         img_object = file.file.read()
         image = cv2.imdecode(np.fromstring(img_object, np.uint8), cv2.IMREAD_COLOR)
 
         file_name = str(time.time()) + file.filename
-        cv2.imwrite(os.path.join(dir_path, 'static', 'aligned_images', file_name), image)
+        print(cfg['save_image'])
+        if cfg['save_image']:
+            cv2.imwrite(os.path.join(dir_path, 'static', 'aligned_images', file_name), image)
         my_string = base64.b64encode(img_object)
         my_string = my_string.decode('utf-8')
         url = 'http://127.0.0.1:8000' + '/extract'
         request_body = {'base64_img': my_string, 'key': cfg['key_api']}
 
         response = requests.post(url=url, json=request_body)
-        return response.json()
+        response = response.json()
+
+        if response['description'] != 'image is id card':
+            return templates.TemplateResponse(os.path.join('upload_image_again.html'), {'request': request})
+
+        base64_img = "data:image/png;base64," + my_string
+        return templates.TemplateResponse(os.path.join('predict.html'),
+                                   {'request': request, 'base64_img': base64_img, 'info': response['info']})
 
     else:
 
-        pass
+        templates.TemplateResponse(os.path.join('upload_image_again.html'), {'request': request})
 

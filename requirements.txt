@@ -1,9 +1,10 @@
-numpy==1.19.5
-Flask==1.1.2
-Werkzeug==1.0.1
-# Pillow==8.2.0
-vietocr==0.3.5
-easydict==1.9
-matplotlib==3.3.0
+requests==2.25.1
 opencv-python==4.5.2.52
+numpy==1.19.5
+fastapi==0.65.1
+starlette==0.14.2
+vietocr==0.3.5
+gdown==3.11.0
+PyYAML==5.4.1
+pydantic==1.8.2
 torch==1.8.1
