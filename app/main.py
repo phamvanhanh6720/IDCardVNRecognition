@@ -10,7 +10,6 @@ from fastapi import Request
 from fastapi.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import RedirectResponse
 
 from vietocr.tool.config import Cfg
 from cropper import Cropper
@@ -114,9 +113,8 @@ def upload_image(request: Request, file: UploadFile = File(...)):
 
         base64_img = "data:image/png;base64," + my_string
         return templates.TemplateResponse(os.path.join('predict.html'),
-                                   {'request': request, 'base64_img': base64_img, 'info': response['info']})
+                                          {'request': request, 'base64_img': base64_img, 'info': response['info']})
 
     else:
 
         templates.TemplateResponse(os.path.join('upload_image_again.html'), {'request': request})
-
