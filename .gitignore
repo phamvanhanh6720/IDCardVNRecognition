@@ -10,4 +10,6 @@
 *.cfg
 *yml
 models
+evaluate.py
+test.py
 Test_Opencv
