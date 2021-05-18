@@ -1,5 +1,5 @@
-top_left
-top_right
-bottom_left
-bottom_right
-id_card
+0:top_left
+1:top_right
+2:bottom_left
+3:bottom_right
+4:id_card

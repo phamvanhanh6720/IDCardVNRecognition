@@ -7,65 +7,70 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
     	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.0/animate.css" integrity="sha512-VFXHmyaAM2CkNU+TogLhWl7rjTFcXo1YRsruJHHmsZasKSn6LlFivRJ6gVG4mlJtybmAkZL3z9sxqGo5aX0fIw==" crossorigin="anonymous">
-    	<link rel="stylesheet" type="text/css" href="../static/css/main.css">
-    	<link rel="stylesheet" type="text/css" href="../static/css/util.css">
+    	<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/main.css') }}">
+    	<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/css/util.css') }}">
     </head>
     <body>            
         <div class="limiter">
 	    	<div class="container-login100">
                 	<div class="wrap-login100">
                         <div class="login100-pic">
-                            <img class="zoom-img" src="{{url_for('static', filename='aligned_images/'+filename)}}"/>
+                            <img class="zoom-img" src="{{base64_img}}"/>
                         </div>
                         <ul class="home-title list">
                         <li>
                             <b>ID:</b>
-                            <span>{{ id }}</span>
+                            <span>{{ info['id'] }}</span>
                         </li>
                         <li>
                             <b>Họ tên:</b>
-                            <span>{{ full_name }}</span>
+                            <span>{{ info['full_name'] }}</span>
                         </li>                        
                         <li>
                             <b>Ngày sinh:</b>
-                            <span>{{ date_of_birth }}</span>
+                            <span>{{ info['date_of_birth'] }}</span>
                         </li>                        
                         <li>
                             <b>Giới tính:</b>
-                            <span>{{ sex }}</span>
+                            <span>{{ info['sex'] }}</span>
                         </li>                        
-                        {% if dan_toc != "" %}
+                        {% if 'nation' in info.keys() %}
                         <li>
                             <b>Dân tộc:</b>
-                            <span>{{ dan_toc[0] }}</span>
+                            <span>{{ info['nation'] }}</span>
                         </li>                        
                         {% endif %}
-                        {% if quoc_tich != "" %}
+                        {% if 'nationality' in info.keys()%}
                         <li>
                             <b>Quốc tịch:</b>
-                            <span>{{ quoc_tich[0] }}</span>
+                            <span>{{ info['nationality'] }}</span>
                         </li>
                         {% endif %}
                         <li>
                             <b>Quê quán:</b>
-                            <span>{{ que_quan_0 }}</span>
+                            <span>{{ info['place_of_birth'][0] }}</span>
                         </li>
-                        {% if que_quan_1 != '' %}
+                        {% if info['place_of_birth']|count > 1 %}
                         <li>
                             <b></b>
-                            <span>{{ que_quan_1 }}</span>
+                            <span>{{ info['place_of_birth'][1] }}</span>
                         </li>
                         {% endif %}
                         <li>
                             <b>Nơi thường trú:</b>
-                            <span>{{ noi_thuong_tru_0 }}</span>
+                            <span>{{ info['place_of_residence'][0] }}</span>
                         </li>
-                        {% if noi_thuong_tru_1 != '' %}
+                        {% if info['place_of_residence']|count > 1 %}
                         <li>
                             <b></b>
-                            <span>{{ noi_thuong_tru_1 }}</span>
+                            <span>{{ info['place_of_residence'][0] }}</span>
                         </li> 
-                        {% endif %}                       
+                        {% endif %}
+                        <li>
+                            <br>
+                            <br>
+                            <a class="btn btn-primary btn-lg" href="../" role="button">New Request</a>
+                        </li>
                         </ul>
                 	</div>
 	    	</div>
@@ -74,4 +79,4 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>                
     </body>
-</html>
+</html>exp

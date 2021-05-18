@@ -1,151 +1,202 @@
-import tensorflow as tf
-import numpy as np
 import cv2
-from core.utils import  nms
+import numpy as np
+from typing import List, Dict, Any, Union
+
 
 class Detector:
-    TARGET_SIZE = (416, 416)
-    def __init__(self):
-        self.info_images = None
-        self.best_bboxes = None
+
+    def __init__(self, config_path, weight_path, score_threshold=0.5, iou_threshold=0.6):
+
+        self.iou_threshold = iou_threshold
+        self.score_threshold = score_threshold
+        self.i2label_cc = {0: 'id', 1: 'full_name', 2: 'date_of_birth', 3: 'sex', 4: 'nationality',
+                           5: 'nation', 6: 'address_info', 7: 'portrait', 8: 'duration', 9: 'place_of_birth',
+                           10: 'place_of_residence'}
+
+        # Model
+        self.config_path = config_path
+        self.weight_path = weight_path
+        self.net = cv2.dnn.readNetFromDarknet(self.config_path, self.weight_path)
+        self.ln = self.net.getLayerNames()
+        self.ln = [self.ln[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
 
     @staticmethod
-    def decode_prediction(pred, original_width, original_height, iou_threshold):
+    def preprocess_img(img):
+        img = cv2.dnn.blobFromImage(img, 1 / 255.0, (416, 416), swapRB=True, crop=False)
+
+        return img
+
+    @staticmethod
+    def crop(original_image, b_box):
+        x_min, y_min, x_max, y_max, _, _ = list(map(int, list(b_box)))
+        cropped_image = original_image[y_min:y_max, x_min: x_max]
+        cropped_image = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB)
+
+        return cropped_image
+
+    @staticmethod
+    def decode_address(address_bbox: np.ndarray):
+        """
+        address_info[i] = nd.array([x_min, y_min, x_max, y_max, score, class_id])
+        :Return
         """
 
-        :param pred: ndarray 2-D : respone of detector model
-        :param original_width:
-        :param original_height:
-        :param iou_threshold:
-        :return: ndarray best_bboxes: (x_min, y_min, x_max, y_max, score, class)
-        label=> index:
-        id                  0
-        full_name           1
-        data_of_birth       2
-        sex                 3
-        quoc_tich           4
-        dan_toc             5
-        address_info        6
-        chan_dung           7
-        thoi_han            8
-        """
-
-        # coordinates[i] : (y_min, x_min, y_max, x_max)
-        coordinates = pred[:, 0:4]
-        y_mins = coordinates[:, 0:1] * original_height
-        x_mins = coordinates[:, 1:2] * original_width
-        y_maxs = coordinates[:, 2:3] * original_height
-        x_maxs = coordinates[:, 3:4] * original_width
-
-        scores = pred[:, 4:13]
-        classes = np.argmax(scores, axis=-1)
-        classes = np.expand_dims(classes, axis=-1)
-        scores = np.max(scores, axis=-1, keepdims=True)
-
-        # bboxes : (xmin, ymin, xmax, ymax, score, class)
-        bboxes = np.hstack((x_mins, y_mins, x_maxs, y_maxs, scores, classes))
-        best_bboxes = nms(bboxes, iou_threshold=iou_threshold)
-        best_bboxes = np.array(best_bboxes)
-
-        # the maximum bboxes of address_info is 4 bboxes
-        classes = best_bboxes[:, 5].astype(int)
-        scores = best_bboxes[:, 4]
-
-        mask = classes == 6
-        if sum(mask) <= 4:
-            return best_bboxes
-        scores = scores * mask
-        idxs = np.where(scores > 0)[0]
-        deletes = np.argsort(scores[idxs])[::-1][4:]
-        final_best_bboxes = np.delete(best_bboxes, deletes, axis=0)
-
-        return final_best_bboxes
-
-    def decode_infor(self):
-        classes = self.best_bboxes[:, 5].astype(int)
-        label = {'0': 'id', '1': 'full_name', '2': 'date_of_birth', '3': 'sex', '4': 'quoc_tich' \
-            , '5': 'dan_toc', '6': 'address_info', '7': 'chan_dung', '8': 'thoi_han'}
-        infor = {}
-        for i in range(len(classes)):
-            key = label[str(classes[i])]
-            if key not in infor.keys():
-                infor[key] = []
-                infor[key].append(list(self.best_bboxes[i][:5]))
-            else:
-                infor[key].append(list(self.best_bboxes[i][:5]))
-
-        if "address_info" in infor.keys():
-            address_info = infor['address_info']
-            infor.pop("address_info")
-            dict_address = self.decode_address(address_info)
-
-            infor['que_quan'] = dict_address['que_quan']
-            infor['noi_thuong_tru'] = dict_address['noi_thuong_tru']
-
-        return infor
-
-    def decode_address(self, address_info):
-        """
-        :param address_info: list of lists, address_info[i]=[x_min, y_min, x_max, y_max, score]
-        """
-        address_info = np.asarray(address_info)
-        y_mins = address_info[:, 1]
+        y_mins = address_bbox[:, 1]
         args = np.argsort(y_mins)
-        address_info = address_info[args]
+        address_bbox = address_bbox[args]
 
-        num_address = address_info.shape[0]
-        dict_address = {}
+        num_address = address_bbox.shape[0]
+
+        address = {}
 
         if num_address == 4:
-            dict_address['que_quan'] = [list(address_info[0]), list(address_info[1])]
-            dict_address['noi_thuong_tru'] = [list(address_info[2]), list(address_info[3])]
-            return dict_address
-        elif num_address == 2:
-            dict_address['que_quan'] = [list(address_info[0])]
-            dict_address['noi_thuong_tru'] = [list(address_info[1])]
-            return dict_address
+            address['place_of_birth'] = address_bbox[:2]
+            address['place_of_residence'] = address_bbox[2:4]
 
-        bbox_1 = list(address_info[0])
-        bbox_2 = list(address_info[1])
-        bbox_3 = list(address_info[2])
+            return address
+        elif num_address == 2:
+            address['place_of_birth'] = address_bbox[0].reshape(1, -1)
+            address['place_of_residence'] = address_bbox[1].reshape(1, -1)
+
+            return address
+
+        bbox_1 = list(address_bbox[0])
+        bbox_2 = list(address_bbox[1])
+        bbox_3 = list(address_bbox[2])
 
         distance_12 = bbox_2[1] - bbox_1[3]
         distance_23 = bbox_3[1] - bbox_2[3]
 
-        dict_address['que_quan'] = []
-        dict_address['noi_thuong_tru'] = []
-        dict_address['que_quan'].append(bbox_1)
+        address['place_of_birth'] = []
+        address['place_of_residence'] = []
+        address['place_of_birth'].append(bbox_1)
         if distance_12 < distance_23:
-            dict_address['que_quan'].append(bbox_2)
+            address['place_of_birth'].append(bbox_2)
         else:
-            dict_address['noi_thuong_tru'].append(bbox_2)
+            address['place_of_residence'].append(bbox_2)
 
-        dict_address['noi_thuong_tru'].append(bbox_3)
-        return dict_address
+        address['place_of_residence'].append(bbox_3)
 
-    def crop_image(self, original_image, x_min, y_min, x_max, y_max):
-        cropped_image = original_image[y_min:y_max, x_min: x_max]
-        return cropped_image
+        address['place_of_birth'] = np.array(address['place_of_birth'])
+        address['place_of_residence'] = np.array(address['place_of_residence'])
 
-    def set_info_images(self, original_image):
-        original_height, original_width, _ = original_image.shape
-        infor = self.decode_infor()
-        keys = infor.keys()
+        return address
 
-        infor_images = {}
-        for key in keys:
-            infor_images[key] = []
-            for i in range(len(infor[key])):
-                bbox_coor = infor[key][i][:4]
-                score = infor[key][i][4]
+    def infer_yolo(self, image: np.ndarray):
 
-                cropped_image = self.crop_image(original_image, int(bbox_coor[0]), int(bbox_coor[1]), int(bbox_coor[2]), int(bbox_coor[3]))
-                infor_images[key].append({'image': cropped_image, 'score': score})
+        height, width, _ = image.shape
+        img = self.preprocess_img(image)
+        self.net.setInput(img)
+        layer_outputs = self.net.forward(self.ln)
 
-        self.info_images = infor_images
+        boxes = []
+        confidences = []
+        class_ids = []
 
+        for output in layer_outputs:
+            # loop over each of the layer output
+            for detection in output:
+                scores = detection[5:]
+                class_id = np.argmax(scores)
+                confidence = scores[class_id]
+                # filter out weak predictions by ensuring the detected
+                # probability is greater than the minimum probability
+                if confidence >= self.score_threshold:
+                    # scale the bounding box coordinates back relative to the
+                    # size of the image
 
+                    box = detection[0:4] * np.array([width, height, width, height])
+                    (center_x, center_y, box_width, box_height) = box.astype("int")
+                    # use the center (x, y)-coordinates to derive the top and
+                    # and left corner of the bounding box
+                    x = int(center_x - (box_width / 2))
+                    y = int(center_y - (box_height / 2))
+                    # update our list of bounding box coordinates, confidences,
+                    # and class IDs
+                    boxes.append([x, y, int(box_width), int(box_height)])
+                    confidences.append(float(confidence))
+                    class_ids.append(class_id)
 
-    def set_best_bboxes(self, pred, original_width, original_height, iou_threshold):
-        self.best_bboxes = self.decode_prediction(pred, original_width, original_height, iou_threshold)
+        # nms
+        idxs: np.ndarray = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=self.score_threshold,
+                                            nms_threshold=self.iou_threshold)
 
+        b_boxes = list()
+        if len(idxs) > 0:
+            for i in idxs.flatten():
+                x_min, y_min, box_width, box_height = boxes[i]
+                x_max = int(x_min + box_width)
+                y_max = int(y_min + box_height)
+
+                score = confidences[i]
+                class_id = class_ids[i]
+
+                # x_min, y_min, x_max, y_max, score, class
+                b_boxes.append([x_min, y_min, x_max, y_max, score, class_id])
+
+        return np.array(b_boxes)
+
+    def select_best_bbox(self, b_boxes):
+        """
+        Select best bounding boxes of each class except address_info.
+        In case of address_info class, choose maximum 4 bounding boxes that have higher score
+        """
+        classes = b_boxes[:, 5].astype(int)
+        scores = b_boxes[:, 4]
+
+        info = dict()
+
+        for i in list(self.i2label_cc.keys()):
+            mask = classes == i
+
+            # special case: id of address_info is 6
+            if i != 6 and np.sum(mask) != 0:
+                idx = np.argmax(scores * mask)
+                info[i] = b_boxes[idx]
+
+            elif np.sum(mask) != 0:
+                address_boxes = b_boxes[mask]
+                address_scores = address_boxes[:, 4]
+
+                if address_scores.shape[0] > 4:
+                    idx = np.argsort(address_scores)
+                    idx = idx[::-1]
+                    address_boxes = address_boxes[idx[:4]]
+
+                info[i] = address_boxes
+
+        return info
+
+    def process(self, aligned_image):
+
+        b_boxes = self.infer_yolo(aligned_image)
+
+        info: dict = self.select_best_bbox(b_boxes)
+
+        info_img: Dict[Union[int, Any], Union[List[Any], Any]] = dict()
+
+        for id in info.keys():
+            if id != 6:
+                info_img[id] = self.crop(aligned_image, info[id])
+            elif 6 in list(info.keys()):
+
+                address_bbox = info[6]
+                address_info_dict = self.decode_address(address_bbox)
+                for key in address_info_dict.keys():
+                    if key == 'place_of_birth':
+                        boxes = address_info_dict[key]
+
+                        # 9 is id of place_of_birth class
+                        info_img[9] = []
+                        for i in range(boxes.shape[0]):
+                            info_img[9].append(self.crop(aligned_image, boxes[i]))
+
+                    elif key == 'place_of_residence':
+                        boxes = address_info_dict[key]
+
+                        # 10 is id of place_of_residence
+                        info_img[10] = []
+                        for i in range(boxes.shape[0]):
+                            info_img[10].append(self.crop(aligned_image, boxes[i]))
+
+        return info_img

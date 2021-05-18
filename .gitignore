@@ -3,3 +3,11 @@
 *.jpeg
 *.png
 *.pyc
+*ttf
+*.ipynb
+.idea/
+*.weights
+*.cfg
+*yml
+models
+Test_Opencv
