@@ -37,7 +37,7 @@
                         {% if 'nation' in info.keys() %}
                         <li>
                             <b>Dân tộc:</b>
-                            <span>{{ info['nation'] }}</span>
+                            <span>{{ info['nation'].split(':')[-1] }}</span>
                         </li>                        
                         {% endif %}
                         {% if 'nationality' in info.keys()%}
@@ -63,7 +63,7 @@
                         {% if info['place_of_residence']|count > 1 %}
                         <li>
                             <b></b>
-                            <span>{{ info['place_of_residence'][0] }}</span>
+                            <span>{{ info['place_of_residence'][1] }}</span>
                         </li> 
                         {% endif %}
                         <li>

@@ -116,5 +116,5 @@ def upload_image(request: Request, file: UploadFile = File(...)):
                                           {'request': request, 'base64_img': base64_img, 'info': response['info']})
 
     else:
-
-        templates.TemplateResponse(os.path.join('upload_image_again.html'), {'request': request})
+        print("Fail")
+        return templates.TemplateResponse(os.path.join('upload_image_again.html'), {'request': request})
