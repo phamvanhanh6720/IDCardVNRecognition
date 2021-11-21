@@ -1,0 +1,14 @@
+cropper:
+    cfg: https://drive.google.com/uc?id=1mjVVlUVzh4PIYfR2bmnM_5KIK_uJloPm&export=download
+    weight: https://drive.google.com/uc?id=1ZEmQBg0oP1oVeWpAcOIB4_2YyBTkgClu&export=download
+
+detector:
+    cfg: https://drive.google.com/uc?id=1f8Ws9VXbhu0irx2gjU_4qsF6zl0_AYm7&export=download
+    weight: https://drive.google.com/uc?id=1GPVIFZbWkm86mVJiUarpuAPvceZNTN2w&export=download
+
+reader:
+    weight: https://drive.google.com/uc?id=12etrPgyR0-K-vqvA6-WkAhFTT0tef1u7&export=download
+
+key_api: '4ed73f45cc4c08c57be44ad25221093d'
+
+save_image: False

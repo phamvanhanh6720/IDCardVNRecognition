@@ -8,7 +8,6 @@
 .idea/
 *.weights
 *.cfg
-*yml
 models
 evaluate.py
 test.py
