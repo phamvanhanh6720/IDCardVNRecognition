@@ -28,16 +28,17 @@ templates = Jinja2Templates(directory=os.path.join(dir_path, 'templates'))
 # Model AI
 cfg = Config.load_config()
 
-cropper = Cropper(config_path=download_weights(cfg['cropper']['cfg']),
-                  weight_path=download_weights(cfg['cropper']['weight']))
+cropper = Cropper(config_path=cfg['cropper']['cfg'],
+                  weight_path=cfg['cropper']['weight'])
 
-detector = Detector(config_path=download_weights(cfg['detector']['cfg']),
-                    weight_path=download_weights(cfg['detector']['weight']))
+detector = Detector(config_path=cfg['detector']['cfg'],
+                    weight_path=cfg['detector']['weight'])
 
 config = Cfg.load_config_from_name('vgg_transformer')
 config['weights'] = cfg['reader']['weight']
 config['cnn']['pretrained'] = False
-config['device'] = 'cuda:0'
+# config['device'] = 'cuda:0'
+config['device'] = 'cpu'
 config['predictor']['beamsearch'] = False
 reader = OCR(config)
 
