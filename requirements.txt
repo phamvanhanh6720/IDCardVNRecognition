@@ -7,4 +7,4 @@ vietocr==0.3.5
 gdown==3.11.0
 PyYAML==5.4.1
 pydantic==1.8.2
-torch==1.8.1
+torch==1.13.1
