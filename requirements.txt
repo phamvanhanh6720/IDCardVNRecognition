@@ -2,7 +2,7 @@ requests==2.25.1
 opencv-python==4.5.2.52
 numpy==1.19.5
 fastapi==0.65.1
-starlette==0.14.2
+starlette==0.27.0
 vietocr==0.3.5
 gdown==3.11.0
 PyYAML==5.4.1
